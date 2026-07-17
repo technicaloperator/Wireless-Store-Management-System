@@ -6,10 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "server": "node server/server.js",
     "electron": "electron .",
-    "start": "concurrently \"npm run dev\" \"npm run server\" \"wait-on http://localhost:5173 && npm run electron\"",
-    "build": "vite build",
+    "start": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && npm run electron\"",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -18,9 +16,6 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.2.0",
     "@mui/material": "^9.2.0",
-    "better-sqlite3": "^12.11.1",
-    "cors": "^2.8.6",
-    "express": "^5.2.1",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "react": "^19.2.7",
