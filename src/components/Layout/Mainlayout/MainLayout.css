@@ -1,0 +1,12 @@
+.main-layout{
+
+    margin-left:260px;
+
+    width:calc(100vw - 260px);
+
+    height:100vh;
+
+    display:flex;
+
+    flex-direction:column;
+}

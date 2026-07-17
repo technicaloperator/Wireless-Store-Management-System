@@ -1,0 +1,140 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+.layout{
+    display:flex;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+    background:#eef2f7;
+}
+
+/* Sidebar */
+
+.sidebar{
+    width:260px;
+    min-width:260px;
+    background:#0f2d52;
+    color:white;
+    display:flex;
+    flex-direction:column;
+}
+
+.sidebar h2{
+    text-align:center;
+    padding:25px;
+    font-size:28px;
+    border-bottom:1px solid rgba(255,255,255,.2);
+}
+
+.menu-item{
+    padding:18px 24px;
+    cursor:pointer;
+    transition:.25s;
+    font-size:17px;
+}
+
+.menu-item:hover{
+    background:#1b4b82;
+}
+
+.menu-item.active{
+    background:#2d6dcc;
+    font-weight:bold;
+}
+
+/* Main */
+
+.main{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+}
+
+/* Header */
+
+.header{
+    height:120px;
+    background:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 40px;
+    border-bottom:3px solid #103c72;
+    box-shadow:0 4px 12px rgba(16,60,114,.1);
+}
+
+.header > div:first-child{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+
+.logout-btn{
+    background:#dc3545;
+    color:white;
+    border:none;
+    padding:12px 24px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+    font-size:16px;
+}
+
+.logout-btn:hover{
+    background:#bb2d3b;
+}
+
+.search-button{
+    background:#4a90e2;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+    font-size:14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    transition:background 0.2s, transform 0.15s;
+}
+
+.search-button:hover{
+    background:#3a7bc8;
+    transform:translateY(-1px);
+}
+
+.search-button:active{
+    transform:translateY(0);
+}
+
+.search-button span:first-child{
+    font-size:16px;
+}
+
+.header h2{
+    color:#103c72;
+    font-size:32px;
+    font-weight:700;
+    letter-spacing:0.5px;
+    margin-bottom:4px;
+}
+
+.header p{
+    color:#666;
+    font-size:16px;
+    font-weight:500;
+    letter-spacing:0.3px;
+}
+
+/* Content */
+
+.content{
+    flex:1;
+    overflow:auto;
+    padding:20px;
+}

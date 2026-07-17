@@ -1,0 +1,33 @@
+.page{
+
+    flex:1;
+
+    overflow:auto;
+
+    padding:30px;
+
+    background:#eef2f7;
+
+}
+
+.page-title{
+
+    font-size:34px;
+
+    font-weight:bold;
+
+    margin-bottom:30px;
+
+}
+
+.card{
+
+    background:white;
+
+    border-radius:12px;
+
+    padding:25px;
+
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+
+}

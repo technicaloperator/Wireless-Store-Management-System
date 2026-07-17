@@ -1,0 +1,308 @@
+.settings-page{
+    padding:30px;
+    background:#eef3f9;
+    min-height:100vh;
+}
+
+/* =======================================
+   PAGE TITLE
+======================================= */
+
+.settings-page h2{
+    font-size:32px;
+    color:#183153;
+    margin-bottom:25px;
+    border-bottom:3px solid #0d6efd;
+    display:inline-block;
+    padding-bottom:8px;
+}
+
+/* =======================================
+   INFO TABLE
+======================================= */
+
+.settings-table{
+    width:100%;
+    max-width:750px;
+    border-collapse:collapse;
+    background:#fff;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+    margin-bottom:35px;
+}
+
+.settings-table td{
+    padding:16px 22px;
+    border-bottom:1px solid #ececec;
+}
+
+.settings-table tr:last-child td{
+    border-bottom:none;
+}
+
+.settings-table td:first-child{
+    width:240px;
+    background:#f8f9fa;
+    font-weight:700;
+    color:#183153;
+}
+
+
+/* =======================================
+   DATA MANAGEMENT
+======================================= */
+
+.data-management{
+    background:white;
+    border-radius:12px;
+    padding:30px;
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+}
+
+.data-management h3{
+    margin-top:0;
+    margin-bottom:25px;
+    color:#183153;
+    font-size:24px;
+}
+
+.data-management button{
+    width:100%;
+    padding:16px;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+    margin-bottom:18px;
+    transition:.25s;
+}
+
+.backup-btn{
+    background:#198754;
+    color:white;
+}
+
+.backup-btn:hover{
+    background:#157347;
+}
+
+.restore-btn{
+    background:#0d6efd;
+    color:white;
+}
+
+.restore-btn:hover{
+    background:#0b5ed7;
+}
+
+.clear-btn{
+    background:#dc3545;
+    color:white;
+}
+
+.clear-btn:hover{
+    background:#bb2d3b;
+}
+
+/* =======================================
+   STATUS MESSAGE
+======================================= */
+
+.status-box{
+    margin-top:25px;
+    padding:15px;
+    border-radius:8px;
+    background:#e8f5e9;
+    color:#1e7e34;
+    font-weight:700;
+    text-align:center;
+}
+
+/* =======================================
+   RESTORE POPUP
+======================================= */
+
+.restore-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.55);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+}
+
+.restore-dialog{
+    background:white;
+    width:500px;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 20px 50px rgba(0,0,0,.25);
+}
+
+.restore-dialog h2{
+    margin:0;
+    padding:18px;
+    background:#183153;
+    color:white;
+    font-size:24px;
+}
+
+.restore-dialog table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.restore-dialog td{
+    padding:14px 20px;
+    border-bottom:1px solid #ececec;
+}
+
+.restore-dialog td:first-child{
+    font-weight:700;
+    width:220px;
+    background:#f8f9fa;
+}
+
+.restore-buttons{
+    display:flex;
+}
+
+.restore-buttons button{
+    flex:1;
+    padding:18px;
+    border:none;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.yes-btn{
+    background:#198754;
+    color:white;
+}
+
+.yes-btn:hover{
+    background:#157347;
+}
+
+.cancel-btn{
+    background:#dc3545;
+    color:white;
+}
+
+.cancel-btn:hover{
+    background:#bb2d3b;
+}
+
+/* =======================================
+   MOBILE
+======================================= */
+
+/* =======================================
+   CLEAR DATA POPUP
+======================================= */
+
+.clear-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.55);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+}
+
+.clear-dialog{
+    background:white;
+    width:500px;
+    border-radius:12px;
+    padding:24px;
+    box-shadow:0 20px 50px rgba(0,0,0,.25);
+}
+
+.clear-dialog h2{
+    margin:0 0 12px;
+    color:#183153;
+    font-size:26px;
+}
+
+.clear-dialog p{
+    margin:0 0 18px;
+    color:#555;
+}
+
+.clear-options{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-bottom:20px;
+}
+
+.clear-options label{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 14px;
+    border:1px solid #dde3eb;
+    border-radius:10px;
+    cursor:pointer;
+    background:#f8f9fa;
+    font-weight:600;
+}
+
+.clear-options input{
+    width:18px;
+    height:18px;
+}
+
+.clear-buttons{
+    display:flex;
+    gap:14px;
+}
+
+.clear-buttons button{
+    flex:1;
+    padding:16px;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.clear-buttons .yes-btn{
+    background:#dc3545;
+    color:white;
+}
+
+.clear-buttons .yes-btn:hover{
+    background:#bb2d3b;
+}
+
+.clear-buttons .cancel-btn{
+    background:#6c757d;
+    color:white;
+}
+
+.clear-buttons .cancel-btn:hover{
+    background:#565e64;
+}
+
+@media(max-width:768px){
+
+.settings-page{
+    padding:15px;
+}
+
+.restore-dialog{
+    width:95%;
+}
+
+.settings-table td{
+    padding:12px;
+}
+
+}

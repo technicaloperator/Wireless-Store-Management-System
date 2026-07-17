@@ -1,0 +1,249 @@
+.issue-page{
+    display:grid;
+    grid-template-columns:430px 1fr;
+    gap:25px;
+    padding:25px;
+    background:#eef3f9;
+    min-height:100vh;
+}
+
+/* ================= LEFT CARD ================= */
+
+.issue-card{
+    background:#fbfdff;
+    border-radius:16px;
+    box-shadow:0 6px 18px rgba(0,0,0,.06);
+    overflow:hidden;
+    border:1px solid rgba(21,101,192,0.10);
+}
+
+.issue-card h2{
+    margin:0;
+    padding:18px;
+    background:linear-gradient(135deg,#1565c0,#0d47a1);
+    color:#fff;
+    text-align:center;
+    font-size:24px;
+    letter-spacing:1px;
+}
+
+.issue-grid{
+    padding:20px;
+    display:grid;
+    gap:18px;
+}
+
+/* Box the ISSUE VOUCHER form area with a subtle border and light background */
+/* remove inner grid border to keep a single closed border around the card */
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+}
+
+.form-group label{
+    font-weight:700;
+    color:#0d47a1;
+    margin-bottom:6px;
+    font-size:14px;
+    letter-spacing:.5px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea{
+    padding:12px;
+    border:2px solid #d9e4f3;
+    border-radius:10px;
+    font-size:15px;
+    transition:.25s;
+    background:#fff;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus{
+    outline:none;
+    border-color:#1565c0;
+    box-shadow:0 0 8px rgba(21,101,192,.25);
+}
+
+.full-width{
+    grid-column:1/-1;
+}
+
+.form-group textarea{
+    resize:none;
+    height:48px;
+    min-height:48px;
+    max-height:48px;
+}
+
+.section-box{
+    background:#d7e7ff;
+    border:1px solid #aec4e8;
+    border-radius:10px;
+    padding:20px;
+    margin-bottom:24px;
+}
+
+.section-box .form-group{
+    margin-bottom:16px;
+}
+
+.section-box .form-group:last-child{
+    margin-bottom:0;
+}
+
+.quick-extra-wrap{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-top:6px;
+}
+
+.quick-extra-chip{
+    border:1px solid #cfd9e8;
+    background:#f7fbff;
+    color:#0d47a1;
+    padding:6px 10px;
+    border-radius:8px;
+    font-size:13px;
+    line-height:1.2;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.quick-extra-chip:hover{
+    background:#e8f2ff;
+    border-color:#aec8f4;
+}
+
+.quick-extra-chip:active{
+    transform:translateY(1px);
+}
+
+/* ================= ISSUE BUTTON ================= */
+
+.issue-button,
+.preview-btn,
+.add-list-btn{
+    width:100%;
+    margin:0;
+    padding:14px 16px;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(135deg,#43a047,#2e7d32);
+    color:#fff;
+    font-size:18px;
+    font-weight:700;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.issue-button:hover,
+.preview-btn:hover,
+.add-list-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 18px rgba(46,125,50,.35);
+}
+
+.issue-actions{
+    display:flex;
+    gap:15px;
+    padding:0 20px 20px;
+}
+
+.issue-actions button{
+    flex:1;
+}
+
+.selected-table .delete-btn{
+    background:#dc3545;
+}
+
+.selected-table .delete-btn:hover{
+    background:#bb2d3b;
+}
+
+.selected-table .history-btn{
+    background:#0d6efd;
+    color:#fff;
+    margin-right:10px;
+}
+
+.selected-table .history-btn:hover{
+    background:#0b5ed7;
+}
+
+.selected-table td:last-child{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+}
+
+/* ================= RIGHT CARD ================= */
+
+.available-card{
+    background:#fff;
+    border-radius:16px;
+    box-shadow:0 10px 25px rgba(0,0,0,.12);
+    overflow:hidden;
+}
+
+.available-card h2{
+    margin:0;
+    padding:18px;
+    text-align:center;
+    color:#fff;
+    background:linear-gradient(135deg,#00897b,#00695c);
+    font-size:24px;
+}
+
+/* ================= TABLE ================= */
+
+.available-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.available-table thead{
+    background:#1976d2;
+    color:#fff;
+}
+
+.available-table th{
+    padding:12px;
+    font-size:15px;
+}
+
+.available-table td{
+    padding:10px;
+    border-bottom:1px solid #e6e6e6;
+    text-align:center;
+}
+
+.available-table tbody tr:nth-child(even){
+    background:#f8fbff;
+}
+
+.available-table tbody tr:hover{
+    background:#e3f2fd;
+}
+
+/* ================= STATUS ================= */
+
+.available-table td:last-child{
+    font-weight:700;
+    color:#2e7d32;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:1100px){
+
+.issue-page{
+    grid-template-columns:1fr;
+}
+
+}
