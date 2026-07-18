@@ -674,6 +674,7 @@ for (let i = Number(from); i <= Number(to); i++) {
           </tbody>
 
         </table>
+       
                 {/* ================= ADD ITEM MODAL ================= */}
 
         {showAdd && (

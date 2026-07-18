@@ -4,7 +4,9 @@
     gap:25px;
     padding:25px;
     background:#eef3f9;
-    min-height:100vh;
+    height:calc(100vh - 50px);
+    overflow:hidden;
+    box-sizing:border-box;
 }
 
 /* ================= LEFT CARD ================= */
@@ -13,8 +15,11 @@
     background:#fbfdff;
     border-radius:16px;
     box-shadow:0 6px 18px rgba(0,0,0,.06);
-    overflow:hidden;
     border:1px solid rgba(21,101,192,0.10);
+
+    display:flex;
+    flex-direction:column;
+    overflow-y:auto;
 }
 
 .issue-card h2{
@@ -188,7 +193,6 @@
     background:#fff;
     border-radius:16px;
     box-shadow:0 10px 25px rgba(0,0,0,.12);
-    overflow:hidden;
 }
 
 .available-card h2{

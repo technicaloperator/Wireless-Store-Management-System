@@ -103,7 +103,10 @@
     display:flex;
     flex-direction:column;
     padding:25px;
-    overflow:auto;
+
+    height:calc(100vh - 70px);
+    overflow-y:auto;
+    overflow-x:hidden;
 }
 
 .inventory-topbar{
