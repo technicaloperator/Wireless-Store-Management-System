@@ -16,6 +16,7 @@ function Layout({
   { id: "inventory", label: "📦 Inventory" },
   { id: "issue", label: "📤 Issue" },
   { id: "receive", label: "📥 Receive" },
+  { id: "faulty-stock", label: "🔧 Faulty Stock" },
   { id: "police-station-data", label: "🏢 Police Station Data" },
   { id: "mobile-vehicle-data", label: "🚓 Mobile Vehicle Data" },
   { id: "activity", label: "📝 Activity Log" },

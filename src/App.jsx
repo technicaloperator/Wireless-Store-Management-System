@@ -14,6 +14,7 @@ import UserManagement from "./pages/UserManagement/UserManagement";
 import Settings from "./pages/Settings/Settings";
 import PoliceStationData from "./pages/PoliceStationData/PoliceStationData";
 import MobileVehicleData from "./pages/MobileVehicleData/MobileVehicleData";
+import FaultyStock from "./pages/FaultyStock/FaultyStock";
 
 function App() {
   const [page, setPage] = useState("dashboard");
@@ -70,6 +71,10 @@ function App() {
         return <Settings operator={operator} setOperator={setOperator} />;
       case "permanent":
         return <PermanentIV operator={operator} />;
+
+      case "faulty-stock":
+        return <FaultyStock operator={operator} />;
+        
       default:
         return <Dashboard />;
     }
