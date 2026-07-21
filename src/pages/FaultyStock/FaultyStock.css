@@ -161,7 +161,7 @@
     letter-spacing:.5px;
 }
 
-.condemn-title{
+.CONDEMNED-title{
     background:#8b0000;
 }
 
@@ -275,7 +275,7 @@
 
 .send-btn,
 .repair-btn,
-.condemn-btn{
+.CONDEMNED-btn{
     border:none;
     border-radius:8px;
     padding:8px 12px;
@@ -303,11 +303,11 @@
     background:#157347;
 }
 
-.condemn-btn{
+.CONDEMNED-btn{
     background:#dc3545;
 }
 
-.condemn-btn:hover{
+.CONDEMNED-btn:hover{
     background:#bb2d3b;
 }
 
@@ -349,7 +349,7 @@
 
 }
 /* ===========================
-   CONDEMN TABLE WIDTHS
+   CONDEMNED TABLE WIDTHS
 =========================== */
 
 .faulty-table th:nth-child(1),

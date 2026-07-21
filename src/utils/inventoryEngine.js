@@ -222,10 +222,10 @@ export function faultyItem(
 
 
 /* ==========================================================
-   CONDEMN
+   CONDEMNED
 ========================================================== */
 
-export function condemnItem(
+export function CONDEMNEDItem(
   inventory,
   itemId
 ) {
@@ -238,7 +238,7 @@ export function condemnItem(
 
       ...item,
 
-      status: "CONDEMN",
+      status: "CONDEMNED",
 
       history: [
 
@@ -246,7 +246,7 @@ export function condemnItem(
 
         {
 
-          action: "CONDEMNED",
+          action: "CONDEMNEDED",
 
           date:
             new Date().toLocaleDateString(),

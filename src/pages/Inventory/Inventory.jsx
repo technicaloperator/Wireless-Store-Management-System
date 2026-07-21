@@ -105,9 +105,18 @@ function Inventory() {
 
   const companies = currentItem?.companies || [];
 
-  const filteredInventory = inventory.filter((x) => {
+  const statusOrder = {
+  AVAILABLE: 1,
+  ISSUED: 2,
+  FAULTY: 3,
+  CONDEMNED: 4, // or CONDEMN if you're still using that
+};
+
+const filteredInventory = inventory
+  .filter((x) => {
     const searchValue = search.toUpperCase();
-    const companyMatch = !selectedCompany || x.company === selectedCompany;
+    const companyMatch =
+      !selectedCompany || x.company === selectedCompany;
     const statusMatch =
       selectedStatus === "ALL" || x.status === selectedStatus;
 
@@ -117,6 +126,15 @@ function Inventory() {
       statusMatch &&
       x.number.toString().includes(searchValue)
     );
+  })
+  .sort((a, b) => {
+    const statusDiff =
+      (statusOrder[a.status] || 99) -
+      (statusOrder[b.status] || 99);
+
+    if (statusDiff !== 0) return statusDiff;
+
+    return Number(a.number) - Number(b.number);
   });
 
   const getCount = (item, company, status) => {
@@ -260,20 +278,30 @@ if (duplicate) {
     );
 
     const obj = {
-      id: Date.now(),
-      item: newItem.item,
-      company: newItem.company,
-      number: newItem.number,
-      numberType: itemInfo.numberType,
-      status: "AVAILABLE",
-      location: "WIRELESS STORE",
-      history: [
-        {
-          action: "ITEM ADDED",
-          date: new Date().toLocaleDateString(),
-        },
-      ],
-    };
+  id: Date.now(),
+  item: newItem.item,
+  company: newItem.company,
+  number: newItem.number,
+  numberType: itemInfo.numberType,
+
+  status: "AVAILABLE",
+  location: "WIRELESS STORE",
+
+  // Faulty Stock
+  faultReason: "",
+  repairStatus: "",
+  faultyDate: "",
+  repairSentDate: "",
+  repairedDate: "",
+  condemnedDate: "",
+
+  history: [
+    {
+      action: "ITEM ADDED",
+      date: new Date().toLocaleDateString(),
+    },
+  ],
+};
 
     setInventory([...inventory, obj]);
 
@@ -323,27 +351,35 @@ for (let i = Number(from); i <= Number(to); i++) {
 
     for (let i = Number(from); i <= Number(to); i++) {
       arr.push({
-        id: Date.now() + i,
+  id: Date.now() + i,
 
-        item: newItem.item,
+  item: newItem.item,
 
-        company: newItem.company,
+  company: newItem.company,
 
-        number: i.toString(),
+  number: i.toString(),
 
-        numberType: itemInfo.numberType,
+  numberType: itemInfo.numberType,
 
-        status: "AVAILABLE",
+  status: "AVAILABLE",
 
-        location: "WIRELESS STORE",
+  location: "WIRELESS STORE",
 
-        history: [
-          {
-            action: "ITEM ADDED",
-            date: new Date().toLocaleDateString(),
-          },
-        ],
-      });
+  // Faulty Stock
+  faultReason: "",
+  repairStatus: "",
+  faultyDate: "",
+  repairSentDate: "",
+  repairedDate: "",
+  condemnedDate: "",
+
+  history: [
+    {
+      action: "ITEM ADDED",
+      date: new Date().toLocaleDateString(),
+    },
+  ],
+});
     }
 
     setInventory(arr);
@@ -429,11 +465,17 @@ for (let i = Number(from); i <= Number(to); i++) {
                 >
 
                   <div
-                    className="company-title"
-                    onClick={() =>
-                      toggleCompany(item.name + company)
-                    }
-                  >
+  className="company-title"
+  onClick={() => {
+    toggleCompany(item.name + company);
+
+    openFolder(
+      item.name,
+      company,
+      "ALL"
+    );
+  }}
+>
                     {openCompanies[item.name + company]
                       ? "▼"
                       : "▶"}{" "}

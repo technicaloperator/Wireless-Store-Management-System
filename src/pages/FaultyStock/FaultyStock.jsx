@@ -16,7 +16,7 @@ function FaultyStock() {
   const [selectedGPW, setSelectedGPW] = useState("");
   const [reason, setReason] = useState("");
   const [faultyItems, setFaultyItems] = useState([]);
-  const [condemnedItems, setCondemnedItems] = useState([]);
+  const [CONDEMNEDedItems, setCONDEMNEDedItems] = useState([]);
   const [dataLoaded, setDataLoaded] = useState(false);
 // ===========================
 // LOAD INVENTORY
@@ -30,18 +30,18 @@ useEffect(() => {
 }, []);
 
 // ===========================
-// LOAD FAULTY / CONDEMNED
+// LOAD FAULTY / CONDEMNEDED
 // ===========================
 
 useEffect(() => {
   const storedFaulty =
     JSON.parse(localStorage.getItem("wsms_faultyStock")) || [];
 
-  const storedCondemned =
-    JSON.parse(localStorage.getItem("wsms_condemnedStock")) || [];
+  const storedCONDEMNEDed =
+    JSON.parse(localStorage.getItem("wsms_CONDEMNEDedStock")) || [];
 
   setFaultyItems(storedFaulty);
-  setCondemnedItems(storedCondemned);
+  setCONDEMNEDedItems(storedCONDEMNEDed);
 
   setDataLoaded(true);
 }, []);
@@ -60,42 +60,50 @@ useEffect(() => {
 }, [faultyItems, dataLoaded]);
 
 // ===========================
-// SAVE CONDEMNED
+// SAVE CONDEMNEDED
 // ===========================
 
 useEffect(() => {
   if (!dataLoaded) return;
 
   localStorage.setItem(
-    "wsms_condemnedStock",
-    JSON.stringify(condemnedItems)
+    "wsms_CONDEMNEDedStock",
+    JSON.stringify(CONDEMNEDedItems)
   );
-}, [condemnedItems, dataLoaded]);
+}, [CONDEMNEDedItems, dataLoaded]);
 
   // ===========================
   // DROPDOWN DATA
   // ===========================
 
   const itemList = [
-    ...new Set(inventory.map((inv) => inv.item)),
-  ];
+  ...new Set(
+    inventory
+      .filter((inv) => inv.status === "AVAILABLE")
+      .map((inv) => inv.item)
+  ),
+];
 
   const companyList = [
-    ...new Set(
-      inventory
-        .filter((inv) => inv.item === selectedItem)
-        .map((inv) => inv.company)
-    ),
-  ];
+  ...new Set(
+    inventory
+      .filter(
+        (inv) =>
+          inv.item === selectedItem &&
+          inv.status === "AVAILABLE"
+      )
+      .map((inv) => inv.company)
+  ),
+];
 
-  const numberList = inventory
-    .filter(
-      (inv) =>
-        inv.item === selectedItem &&
-        inv.company === selectedCompany
-    )
-    .map((inv) => inv.number);
-
+ const numberList = inventory
+  .filter(
+    (inv) =>
+      inv.item === selectedItem &&
+      inv.company === selectedCompany &&
+      inv.status === "AVAILABLE"
+  )
+  .map((inv) => inv.number);
   // ===========================
   // SHORT REASON
   // ===========================
@@ -144,7 +152,7 @@ useEffect(() => {
         ...inv,
         status: status === "FAULTY"
           ? "FAULTY"
-          : "CONDEMNED",
+          : "CONDEMNEDED",
       };
 
     }
@@ -161,13 +169,13 @@ useEffect(() => {
   );
 
   // ===========================
-  // SAVE TO FAULTY / CONDEMNED
+  // SAVE TO FAULTY / CONDEMNEDED
   // ===========================
 
   if (status === "FAULTY") {
     setFaultyItems((prev) => [...prev, record]);
   } else {
-    setCondemnedItems((prev) => [...prev, record]);
+    setCONDEMNEDedItems((prev) => [...prev, record]);
   }
 
   // ===========================
@@ -181,7 +189,9 @@ useEffect(() => {
 
 };
 const handleSendForRepair = (id) => {
-
+if (!window.confirm("Send this item for repair?")) {
+  return;
+}
   const updated = faultyItems.map((item) =>
 
     item.id === id
@@ -197,7 +207,9 @@ const handleSendForRepair = (id) => {
 
 };
 const handleRepaired = (id) => {
-
+if (!window.confirm("Mark this item as repaired?")) {
+  return;
+}
   // Find repaired item
   const repairedItem = faultyItems.find(
     (item) => item.id === id
@@ -240,14 +252,20 @@ const handleRepaired = (id) => {
   );
 
 };
-const handleCondemn = (id) => {
-
-  // Find condemned item
-  const condemnedItem = faultyItems.find(
+const handleCONDEMNED = (id) => {
+if (
+  !window.confirm(
+    "Are you sure you want to CONDEMNED this item?\n\nThis action should only be used for items beyond repair."
+  )
+) {
+  return;
+}
+  // Find CONDEMNEDed item
+  const CONDEMNEDedItem = faultyItems.find(
     (item) => item.id === id
   );
 
-  if (!condemnedItem) return;
+  if (!CONDEMNEDedItem) return;
 
   // Remove from Faulty table
   const updatedFaulty = faultyItems.filter(
@@ -256,11 +274,11 @@ const handleCondemn = (id) => {
 
   setFaultyItems(updatedFaulty);
 
-  // Add to Condemned table
-  setCondemnedItems((prev) => [
+  // Add to CONDEMNEDed table
+  setCONDEMNEDedItems((prev) => [
     ...prev,
     {
-      ...condemnedItem,
+      ...CONDEMNEDedItem,
       repairStage: "CONDEMNED",
     },
   ]);
@@ -269,9 +287,9 @@ const handleCondemn = (id) => {
   const updatedInventory = inventory.map((inv) => {
 
     if (
-      inv.item === condemnedItem.item &&
-      inv.company === condemnedItem.company &&
-      inv.number === condemnedItem.gpw
+      inv.item === CONDEMNEDedItem.item &&
+      inv.company === CONDEMNEDedItem.company &&
+      inv.number === CONDEMNEDedItem.gpw
     ) {
 
       return {
@@ -387,10 +405,10 @@ const handleCondemn = (id) => {
             <label>
                 <input
                     type="radio"
-                    checked={status === "CONDEMN"}
-                    onChange={() => setStatus("CONDEMN")}
+                    checked={status === "CONDEMNED"}
+                    onChange={() => setStatus("CONDEMNED")}
                 />
-                Condemned
+                CONDEMNEDed
             </label>
 
         </div>
@@ -501,11 +519,11 @@ const handleCondemn = (id) => {
 </button>
 
             <button
-  className="condemn-btn"
+  className="CONDEMNED-btn"
   disabled={item.repairStage !== "UNDER REPAIR"}
-  onClick={() => handleCondemn(item.id)}
+  onClick={() => handleCONDEMNED(item.id)}
 >
-  CONDEMN
+  CONDEMNED
 </button>
 
           </div>
@@ -525,12 +543,12 @@ const handleCondemn = (id) => {
 </div>
 
 
-{/* ================= CONDEMNED ITEMS ================= */}
+{/* ================= CONDEMNEDED ITEMS ================= */}
 
 <div className="faulty-table-card">
 
-  <div className="table-title condemn-title">
-    CONDEMNED ITEMS
+  <div className="table-title CONDEMNED-title">
+    CONDEMNEDED ITEMS
   </div>
 
   <table className="faulty-table">
@@ -550,19 +568,19 @@ const handleCondemn = (id) => {
 
     <tbody>
 
-  {condemnedItems.length === 0 ? (
+  {CONDEMNEDedItems.length === 0 ? (
 
     <tr>
 
       <td colSpan="8" className="empty-table">
-        NO CONDEMNED ITEMS
+        NO CONDEMNEDED ITEMS
       </td>
 
     </tr>
 
   ) : (
 
-    condemnedItems.map((item, index) => (
+    CONDEMNEDedItems.map((item, index) => (
 
       <tr key={item.id}>
 
@@ -583,7 +601,7 @@ const handleCondemn = (id) => {
 
         <td>{item.date}</td>
 
-        <td>CONDEMNED</td>
+        <td>CONDEMNEDED</td>
 
         <td>-</td>
 

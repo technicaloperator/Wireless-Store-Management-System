@@ -288,7 +288,7 @@ export const itemStatus = [
 
 "FAULTY",
 
-"CONDEMN",
+"CONDEMNED",
 
 ];
 
@@ -308,7 +308,7 @@ RETURN: "RETURNED",
 
 FAULTY: "MARKED AS FAULTY",
 
-CONDEMN: "CONDEMNED",
+CONDEMNED: "CONDEMNEDED",
 
 };
 
