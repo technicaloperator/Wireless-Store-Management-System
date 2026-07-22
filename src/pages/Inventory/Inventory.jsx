@@ -109,7 +109,7 @@ function Inventory() {
   AVAILABLE: 1,
   ISSUED: 2,
   FAULTY: 3,
-  CONDEMNED: 4, // or CONDEMN if you're still using that
+  CONDEMNED: 4, // or CONDEMNED if you're still using that
 };
 
 const filteredInventory = inventory
@@ -293,7 +293,7 @@ if (duplicate) {
   faultyDate: "",
   repairSentDate: "",
   repairedDate: "",
-  condemnedDate: "",
+  CONDEMNEDDate: "",
 
   history: [
     {
@@ -371,7 +371,7 @@ for (let i = Number(from); i <= Number(to); i++) {
   faultyDate: "",
   repairSentDate: "",
   repairedDate: "",
-  condemnedDate: "",
+  CONDEMNEDDate: "",
 
   history: [
     {
@@ -427,7 +427,7 @@ for (let i = Number(from); i <= Number(to); i++) {
     "AVAILABLE",
     "ISSUED",
     "FAULTY",
-    "CONDEMN",
+    "CONDEMNED",
   ];
     return (
     <div className="inventory-page">

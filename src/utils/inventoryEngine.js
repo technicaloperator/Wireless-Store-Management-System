@@ -246,7 +246,7 @@ export function CONDEMNEDItem(
 
         {
 
-          action: "CONDEMNEDED",
+          action: "CONDEMNED",
 
           date:
             new Date().toLocaleDateString(),

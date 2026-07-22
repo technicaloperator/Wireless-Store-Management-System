@@ -16,7 +16,7 @@ function FaultyStock() {
   const [selectedGPW, setSelectedGPW] = useState("");
   const [reason, setReason] = useState("");
   const [faultyItems, setFaultyItems] = useState([]);
-  const [CONDEMNEDedItems, setCONDEMNEDedItems] = useState([]);
+  const [CONDEMNEDItems, setCONDEMNEDItems] = useState([]);
   const [dataLoaded, setDataLoaded] = useState(false);
 // ===========================
 // LOAD INVENTORY
@@ -30,18 +30,18 @@ useEffect(() => {
 }, []);
 
 // ===========================
-// LOAD FAULTY / CONDEMNEDED
+// LOAD FAULTY / CONDEMNED
 // ===========================
 
 useEffect(() => {
   const storedFaulty =
     JSON.parse(localStorage.getItem("wsms_faultyStock")) || [];
 
-  const storedCONDEMNEDed =
-    JSON.parse(localStorage.getItem("wsms_CONDEMNEDedStock")) || [];
+  const storedCONDEMNED =
+    JSON.parse(localStorage.getItem("wsms_CONDEMNEDStock")) || [];
 
   setFaultyItems(storedFaulty);
-  setCONDEMNEDedItems(storedCONDEMNEDed);
+  setCONDEMNEDItems(storedCONDEMNED);
 
   setDataLoaded(true);
 }, []);
@@ -60,17 +60,17 @@ useEffect(() => {
 }, [faultyItems, dataLoaded]);
 
 // ===========================
-// SAVE CONDEMNEDED
+// SAVE CONDEMNED
 // ===========================
 
 useEffect(() => {
   if (!dataLoaded) return;
 
   localStorage.setItem(
-    "wsms_CONDEMNEDedStock",
-    JSON.stringify(CONDEMNEDedItems)
+    "wsms_CONDEMNEDStock",
+    JSON.stringify(CONDEMNEDItems)
   );
-}, [CONDEMNEDedItems, dataLoaded]);
+}, [CONDEMNEDItems, dataLoaded]);
 
   // ===========================
   // DROPDOWN DATA
@@ -149,11 +149,24 @@ useEffect(() => {
     ) {
 
       return {
-        ...inv,
-        status: status === "FAULTY"
-          ? "FAULTY"
-          : "CONDEMNEDED",
-      };
+  ...inv,
+
+  status: status,
+
+  history: [
+    ...(inv.history || []),
+    {
+      action:
+        status === "FAULTY"
+          ? "MARKED FAULTY"
+          : "CONDEMNED",
+
+      date: new Date().toLocaleDateString(),
+
+      reason,
+    },
+  ],
+};
 
     }
 
@@ -169,13 +182,13 @@ useEffect(() => {
   );
 
   // ===========================
-  // SAVE TO FAULTY / CONDEMNEDED
+  // SAVE TO FAULTY / CONDEMNED
   // ===========================
 
   if (status === "FAULTY") {
     setFaultyItems((prev) => [...prev, record]);
   } else {
-    setCONDEMNEDedItems((prev) => [...prev, record]);
+    setCONDEMNEDItems((prev) => [...prev, record]);
   }
 
   // ===========================
@@ -189,59 +202,93 @@ useEffect(() => {
 
 };
 const handleSendForRepair = (id) => {
-if (!window.confirm("Send this item for repair?")) {
-  return;
-}
-  const updated = faultyItems.map((item) =>
+  if (!window.confirm("Send this item for repair?")) {
+    return;
+  }
 
+  const repairItem = faultyItems.find((item) => item.id === id);
+
+  if (!repairItem) return;
+
+  // Update Faulty Table
+  const updatedFaulty = faultyItems.map((item) =>
     item.id === id
       ? {
           ...item,
           repairStage: "UNDER REPAIR",
         }
       : item
-
   );
 
-  setFaultyItems(updated);
+  setFaultyItems(updatedFaulty);
 
+  // Update Inventory History
+  const updatedInventory = inventory.map((inv) => {
+    if (
+      inv.item === repairItem.item &&
+      inv.company === repairItem.company &&
+      inv.number === repairItem.gpw
+    ) {
+      return {
+        ...inv,
+        history: [
+          ...(inv.history || []),
+          {
+            action: "SENT FOR REPAIR",
+            date: new Date().toLocaleDateString(),
+          },
+        ],
+      };
+    }
+
+    return inv;
+  });
+
+  setInventory(updatedInventory);
+
+  localStorage.setItem(
+    "wsms_inventory",
+    JSON.stringify(updatedInventory)
+  );
 };
+
 const handleRepaired = (id) => {
-if (!window.confirm("Mark this item as repaired?")) {
-  return;
-}
-  // Find repaired item
+  if (!window.confirm("Mark this item as repaired?")) {
+    return;
+  }
+
   const repairedItem = faultyItems.find(
     (item) => item.id === id
   );
 
   if (!repairedItem) return;
 
-  // Remove from Faulty table
   const updatedFaulty = faultyItems.filter(
     (item) => item.id !== id
   );
 
   setFaultyItems(updatedFaulty);
 
-  // Update Inventory
   const updatedInventory = inventory.map((inv) => {
-
     if (
       inv.item === repairedItem.item &&
       inv.company === repairedItem.company &&
       inv.number === repairedItem.gpw
     ) {
-
       return {
         ...inv,
         status: "AVAILABLE",
+        history: [
+          ...(inv.history || []),
+          {
+            action: "REPAIRED",
+            date: new Date().toLocaleDateString(),
+          },
+        ],
       };
-
     }
 
     return inv;
-
   });
 
   setInventory(updatedInventory);
@@ -250,57 +297,57 @@ if (!window.confirm("Mark this item as repaired?")) {
     "wsms_inventory",
     JSON.stringify(updatedInventory)
   );
-
 };
+
 const handleCONDEMNED = (id) => {
-if (
-  !window.confirm(
-    "Are you sure you want to CONDEMNED this item?\n\nThis action should only be used for items beyond repair."
-  )
-) {
-  return;
-}
-  // Find CONDEMNEDed item
-  const CONDEMNEDedItem = faultyItems.find(
+  if (
+    !window.confirm(
+      "Are you sure you want to CONDEMNED this item?\n\nThis action should only be used for items beyond repair."
+    )
+  ) {
+    return;
+  }
+
+  const CONDEMNEDItem = faultyItems.find(
     (item) => item.id === id
   );
 
-  if (!CONDEMNEDedItem) return;
+  if (!CONDEMNEDItem) return;
 
-  // Remove from Faulty table
   const updatedFaulty = faultyItems.filter(
     (item) => item.id !== id
   );
 
   setFaultyItems(updatedFaulty);
 
-  // Add to CONDEMNEDed table
-  setCONDEMNEDedItems((prev) => [
+  setCONDEMNEDItems((prev) => [
     ...prev,
     {
-      ...CONDEMNEDedItem,
+      ...CONDEMNEDItem,
       repairStage: "CONDEMNED",
     },
   ]);
 
-  // Update Inventory
   const updatedInventory = inventory.map((inv) => {
-
     if (
-      inv.item === CONDEMNEDedItem.item &&
-      inv.company === CONDEMNEDedItem.company &&
-      inv.number === CONDEMNEDedItem.gpw
+      inv.item === CONDEMNEDItem.item &&
+      inv.company === CONDEMNEDItem.company &&
+      inv.number === CONDEMNEDItem.gpw
     ) {
-
       return {
         ...inv,
         status: "CONDEMNED",
+        history: [
+          ...(inv.history || []),
+          {
+            action: "CONDEMNED",
+            date: new Date().toLocaleDateString(),
+          },
+        ],
       };
-
     }
 
     return inv;
-
   });
 
   setInventory(updatedInventory);
@@ -309,7 +356,6 @@ if (
     "wsms_inventory",
     JSON.stringify(updatedInventory)
   );
-
 };
   return (
     <div className="faulty-page">
@@ -408,7 +454,7 @@ if (
                     checked={status === "CONDEMNED"}
                     onChange={() => setStatus("CONDEMNED")}
                 />
-                CONDEMNEDed
+                CONDEMNED
             </label>
 
         </div>
@@ -543,12 +589,12 @@ if (
 </div>
 
 
-{/* ================= CONDEMNEDED ITEMS ================= */}
+{/* ================= CONDEMNED ITEMS ================= */}
 
 <div className="faulty-table-card">
 
   <div className="table-title CONDEMNED-title">
-    CONDEMNEDED ITEMS
+    CONDEMNED ITEMS
   </div>
 
   <table className="faulty-table">
@@ -568,19 +614,19 @@ if (
 
     <tbody>
 
-  {CONDEMNEDedItems.length === 0 ? (
+  {CONDEMNEDItems.length === 0 ? (
 
     <tr>
 
       <td colSpan="8" className="empty-table">
-        NO CONDEMNEDED ITEMS
+        NO CONDEMNED ITEMS
       </td>
 
     </tr>
 
   ) : (
 
-    CONDEMNEDedItems.map((item, index) => (
+    CONDEMNEDItems.map((item, index) => (
 
       <tr key={item.id}>
 
@@ -601,7 +647,7 @@ if (
 
         <td>{item.date}</td>
 
-        <td>CONDEMNEDED</td>
+        <td>CONDEMNED</td>
 
         <td>-</td>
 
