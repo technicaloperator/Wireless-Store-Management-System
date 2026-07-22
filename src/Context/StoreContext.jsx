@@ -21,6 +21,17 @@ export function StoreProvider({ children }) {
     const saved = localStorage.getItem("wsms_issues");
     return saved ? JSON.parse(saved) : [];
   });
+// ---------------- FAULTY STOCK ----------------
+const [faultyItems, setFaultyItems] = useState(() => {
+  const saved = localStorage.getItem("wsms_faultyStock");
+  return saved ? JSON.parse(saved) : [];
+});
+
+// ---------------- CONDEMNED STOCK ----------------
+const [CONDEMNEDItems, setCONDEMNEDItems] = useState(() => {
+  const saved = localStorage.getItem("wsms_CONDEMNEDStock");
+  return saved ? JSON.parse(saved) : [];
+});
 
   // ---------------- RECEIVES ----------------
   const [receives, setReceives] = useState(() => {
@@ -117,9 +128,24 @@ const [currentUser, setCurrentUser] = useState(() => {
     localStorage.setItem("wsms_receives", JSON.stringify(receives));
   }, [receives]);
 
+useEffect(() => {
+  localStorage.setItem(
+    "wsms_faultyStock",
+    JSON.stringify(faultyItems)
+  );
+}, [faultyItems]);
+
+useEffect(() => {
+  localStorage.setItem(
+    "wsms_CONDEMNEDStock",
+    JSON.stringify(CONDEMNEDItems)
+  );
+}, [CONDEMNEDItems]);
+
   useEffect(() => {
     localStorage.setItem("wsms_activity", JSON.stringify(activity));
   }, [activity]);
+
   useEffect(() => {
   localStorage.setItem(
     "wsms_users",
@@ -133,20 +159,23 @@ useEffect(() => {
     currentUser
   );
 }, [currentUser]);
-console.log("StoreProvider users =", users);
-console.log("StoreProvider value =", {
-  users,
-  currentUser,
-  inventory,
-});
-  return (
-    <StoreContext.Provider
+
+
+
+return (
+  <StoreContext.Provider
       value={{
   inventory,
   setInventory,
 
   issues,
   setIssues,
+
+faultyItems,
+setFaultyItems,
+
+CONDEMNEDItems,
+setCONDEMNEDItems,
 
   receives,
   setReceives,

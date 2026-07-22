@@ -1,5 +1,6 @@
 import "./FaultyStock.css";
 import { useState, useEffect } from "react";
+import { useStore } from "../../Context/StoreContext";
 
 function FaultyStock() {
 
@@ -9,68 +10,28 @@ function FaultyStock() {
 
   const [status, setStatus] = useState("FAULTY");
 
-  const [inventory, setInventory] = useState([]);
+
 
   const [selectedItem, setSelectedItem] = useState("");
   const [selectedCompany, setSelectedCompany] = useState("");
   const [selectedGPW, setSelectedGPW] = useState("");
   const [reason, setReason] = useState("");
-  const [faultyItems, setFaultyItems] = useState([]);
-  const [CONDEMNEDItems, setCONDEMNEDItems] = useState([]);
-  const [dataLoaded, setDataLoaded] = useState(false);
-// ===========================
-// LOAD INVENTORY
-// ===========================
+  const store = useStore();
 
-useEffect(() => {
-  const storedInventory =
-    JSON.parse(localStorage.getItem("wsms_inventory")) || [];
 
-  setInventory(storedInventory);
-}, []);
 
-// ===========================
-// LOAD FAULTY / CONDEMNED
-// ===========================
 
-useEffect(() => {
-  const storedFaulty =
-    JSON.parse(localStorage.getItem("wsms_faultyStock")) || [];
+const {
+  inventory,
+  setInventory,
 
-  const storedCONDEMNED =
-    JSON.parse(localStorage.getItem("wsms_CONDEMNEDStock")) || [];
+  faultyItems,
+  setFaultyItems,
 
-  setFaultyItems(storedFaulty);
-  setCONDEMNEDItems(storedCONDEMNED);
+  CONDEMNEDItems,
+  setCONDEMNEDItems,
+} = useStore();
 
-  setDataLoaded(true);
-}, []);
-
-// ===========================
-// SAVE FAULTY
-// ===========================
-
-useEffect(() => {
-  if (!dataLoaded) return;
-
-  localStorage.setItem(
-    "wsms_faultyStock",
-    JSON.stringify(faultyItems)
-  );
-}, [faultyItems, dataLoaded]);
-
-// ===========================
-// SAVE CONDEMNED
-// ===========================
-
-useEffect(() => {
-  if (!dataLoaded) return;
-
-  localStorage.setItem(
-    "wsms_CONDEMNEDStock",
-    JSON.stringify(CONDEMNEDItems)
-  );
-}, [CONDEMNEDItems, dataLoaded]);
 
   // ===========================
   // DROPDOWN DATA
@@ -174,12 +135,7 @@ useEffect(() => {
 
   });
 
-  setInventory(updatedInventory);
-
-  localStorage.setItem(
-    "wsms_inventory",
-    JSON.stringify(updatedInventory)
-  );
+setInventory(updatedInventory);
 
   // ===========================
   // SAVE TO FAULTY / CONDEMNED
@@ -244,12 +200,7 @@ const handleSendForRepair = (id) => {
     return inv;
   });
 
-  setInventory(updatedInventory);
-
-  localStorage.setItem(
-    "wsms_inventory",
-    JSON.stringify(updatedInventory)
-  );
+setInventory(updatedInventory);
 };
 
 const handleRepaired = (id) => {
@@ -290,13 +241,7 @@ const handleRepaired = (id) => {
 
     return inv;
   });
-
-  setInventory(updatedInventory);
-
-  localStorage.setItem(
-    "wsms_inventory",
-    JSON.stringify(updatedInventory)
-  );
+setInventory(updatedInventory);
 };
 
 const handleCONDEMNED = (id) => {
@@ -352,10 +297,6 @@ const handleCONDEMNED = (id) => {
 
   setInventory(updatedInventory);
 
-  localStorage.setItem(
-    "wsms_inventory",
-    JSON.stringify(updatedInventory)
-  );
 };
   return (
     <div className="faulty-page">
@@ -509,7 +450,7 @@ const handleCONDEMNED = (id) => {
 
    <tbody>
 
-  {faultyItems.length === 0 ? (
+{(faultyItems || []).length === 0 ? (
 
     <tr>
 
@@ -614,7 +555,7 @@ const handleCONDEMNED = (id) => {
 
     <tbody>
 
-  {CONDEMNEDItems.length === 0 ? (
+{(CONDEMNEDItems || []).length === 0 ? (
 
     <tr>
 
