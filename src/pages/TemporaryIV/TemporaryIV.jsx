@@ -10,8 +10,7 @@ function TemporaryIV() {
     issueVouchers = [],
     setIssueVouchers,
     currentUser,
-    activity,
-    setActivity,
+    addActivity,
   } = useStore();
 
   const [voucherToDelete, setVoucherToDelete] = useState(null);
@@ -269,17 +268,14 @@ function TemporaryIV() {
       setInventory(updatedInventory);
     }
 
-    setActivity((prev) => [
-      {
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString(),
-        operator: currentUser,
-        activity: item.isExtra
-          ? `RECEIVED EXTRA ${item.item} x${item.quantity || 1}`
-          : `RECEIVED ${item.item} ${item.company} ${item.gpwNumbers}`,
-      },
-      ...prev,
-    ]);
+   addActivity({
+    module: "TEMPORARY IV",
+    action: "RECEIVE",
+    details: item.isExtra
+        ? `RECEIVED EXTRA ${item.item} x${item.quantity || 1}`
+        : `RECEIVED ${item.item} ${item.company} ${item.gpwNumbers}`,
+    user: currentUser,
+});
   };
 
   const generatePdf = (voucher) => {

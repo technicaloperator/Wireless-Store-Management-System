@@ -19,8 +19,7 @@ function Issue() {
     permanentVouchers,
     setPermanentVouchers,
     currentUser,
-    activity,
-    setActivity,
+    addActivity,
   } = useStore();
 
   const [ivType, setIvType] = useState("TEMPORARY");
@@ -419,6 +418,22 @@ function Issue() {
       setIssueVouchers([...issueVouchers, voucherRecord]);
     }
 
+    if (ivType === "PERMANENT") {
+  const activityText = [
+    serialDetails ? `ISSUED ${serialDetails}` : null,
+    extraDetails ? `ISSUED ${extraDetails}` : null,
+  ]
+    .filter(Boolean)
+    .join("; ") || `ISSUED ${issueList.length} ITEM(S)`;
+
+  addActivity({
+    module: "PERMANENT IV",
+    action: "ISSUE",
+    details: activityText,
+    user: currentUser,
+  });
+}
+
     const serialDetails = issueList
       .filter((entry) => !entry.isExtra)
       .map((entry) => `${entry.item} ${entry.company} ${entry.gpwNumbers}`)
@@ -435,16 +450,16 @@ function Issue() {
     ]
       .filter(Boolean)
       .join("; ") || `ISSUED ${issueList.length} ITEM(S)`;
+const activityData = {
+  module: "ISSUE",
+  action: "ISSUE",
+  details: activityText,
+  user: currentUser,
+};
 
-    setActivity((prev) => [
-      {
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString(),
-        operator: currentUser,
-        activity: activityText,
-      },
-      ...prev,
-    ]);
+console.log("ACTIVITY BEING SENT:", activityData);
+
+addActivity(activityData);
 
     setVoucherData({
       ...voucherRecord,

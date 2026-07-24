@@ -169,8 +169,13 @@
    TABLE
 =================================================== */
 
+/* ===================================================
+   TABLE
+=================================================== */
+
 .faulty-table{
     width:100%;
+    table-layout:fixed;
     border-collapse:collapse;
 }
 
@@ -192,56 +197,70 @@
     text-align:center;
     vertical-align:middle;
     border-bottom:1px solid #e5e5e5;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
 
 .faulty-table tbody tr:hover{
     background:#f5f9ff;
 }
-
 /* ===================================================
    COLUMN WIDTHS
 =================================================== */
 
-.faulty-table th:nth-child(1),
-.faulty-table td:nth-child(1){
-    width:60px;
+table.faulty-table{
+    width:100%;
+    table-layout:fixed;
 }
 
+/* No. */
+.faulty-table th:nth-child(1),
+.faulty-table td:nth-child(1){
+    width:55px;
+    text-align:center;
+}
+
+/* Item */
 .faulty-table th:nth-child(2),
 .faulty-table td:nth-child(2){
+    width:140px;
+}
+
+/* Company */
+.faulty-table th:nth-child(3),
+.faulty-table td:nth-child(3){
     width:170px;
 }
 
-.faulty-table th:nth-child(3),
-.faulty-table td:nth-child(3){
-    width:220px;
-}
-
+/* GPW / Serial */
 .faulty-table th:nth-child(4),
 .faulty-table td:nth-child(4){
-    width:180px;
+    width:120px;
 }
 
+/* Reason */
 .faulty-table th:nth-child(5),
 .faulty-table td:nth-child(5){
-    min-width:240px;
+    width:auto;
 }
 
+/* Date */
 .faulty-table th:nth-child(6),
 .faulty-table td:nth-child(6){
     width:120px;
 }
 
+/* Status */
 .faulty-table th:nth-child(7),
 .faulty-table td:nth-child(7){
-    width:120px;
+    width:130px;
 }
 
+/* Action */
 .faulty-table th:nth-child(8),
 .faulty-table td:nth-child(8){
-    width:330px;
+    width:390px;
 }
-
 /* ===================================================
    REASON
 =================================================== */
@@ -264,58 +283,71 @@
 /* ===================================================
    ACTION BUTTONS
 =================================================== */
-
 .action-buttons{
     display:flex;
     justify-content:center;
     align-items:center;
-    gap:8px;
+    gap:6px;
     flex-wrap:nowrap;
 }
-
 .send-btn,
 .repair-btn,
 .CONDEMNED-btn{
     border:none;
     border-radius:8px;
-    padding:8px 12px;
-    font-size:13px;
-    font-weight:600;
+    padding:8px 14px;
+    font-size:12px;
+    font-weight:700;
     color:#fff;
     cursor:pointer;
-    transition:.25s;
+    transition:all .2s ease;
     white-space:nowrap;
 }
+
+/* ================= SEND ================= */
 
 .send-btn{
     background:#0d6efd;
 }
 
-.send-btn:hover{
+.send-btn:hover:not(:disabled){
     background:#0b5ed7;
+    transform:translateY(-1px);
+    box-shadow:0 3px 8px rgba(13,110,253,.25);
 }
+
+/* ================= REPAIRED ================= */
 
 .repair-btn{
-    background:#198754;
+    background:#20c997;
 }
 
-.repair-btn:hover{
-    background:#157347;
+.repair-btn:hover:not(:disabled){
+    background:#18b589;
+    transform:translateY(-1px);
+    box-shadow:0 3px 8px rgba(32,201,151,.25);
 }
+
+/* ================= CONDEMN ================= */
 
 .CONDEMNED-btn{
     background:#dc3545;
 }
 
-.CONDEMNED-btn:hover{
+.CONDEMNED-btn:hover:not(:disabled){
     background:#bb2d3b;
+    transform:translateY(-1px);
+    box-shadow:0 3px 8px rgba(220,53,69,.25);
 }
+
+/* ================= DISABLED ================= */
 
 .action-buttons button:disabled{
     opacity:.35;
     cursor:not-allowed;
+    transform:none;
+    box-shadow:none;
 }
-
 /* ===================================================
    RESPONSIVE
 =================================================== */
@@ -348,36 +380,25 @@
     }
 
 }
-/* ===========================
-   CONDEMNED TABLE WIDTHS
-=========================== */
 
-.faulty-table th:nth-child(1),
-.faulty-table td:nth-child(1){
-    width:60px;
+.highlight-row{
+    background:#fff3a3 !important;
+    transition:background-color .4s ease;
+}
+.delete-btn{
+    background:#c82333;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    padding:8px 16px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+    transition:all .2s ease;
 }
 
-.faulty-table th:nth-child(2),
-.faulty-table td:nth-child(2){
-    width:170px;
-}
-
-.faulty-table th:nth-child(3),
-.faulty-table td:nth-child(3){
-    width:220px;
-}
-
-.faulty-table th:nth-child(4),
-.faulty-table td:nth-child(4){
-    width:180px;
-}
-
-.faulty-table th:nth-child(5),
-.faulty-table td:nth-child(5){
-    min-width:240px;
-}
-
-.faulty-table th:nth-child(6),
-.faulty-table td:nth-child(6){
-    width:120px;
+.delete-btn:hover{
+    background:#a71d2a;
+    transform:translateY(-1px);
+    box-shadow:0 3px 8px rgba(167,29,42,.3);
 }

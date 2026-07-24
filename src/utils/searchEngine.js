@@ -96,7 +96,82 @@ const searchInventory = (inventory, searchTerm) => {
 
   return results;
 };
+/**
+ * Search Faulty & Condemned Stock
+ */
+const searchFaultyStock = (
+  faultyItems,
+  CONDEMNEDItems,
+  searchTerm
+) => {
+  const results = [];
 
+  // ---------- FAULTY ----------
+  faultyItems.forEach((item) => {
+    let matchType = null;
+
+    if (partialMatch(item.gpw, searchTerm))
+      matchType = "GPW/SERIAL";
+    else if (partialMatch(item.item, searchTerm))
+      matchType = "ITEM";
+    else if (partialMatch(item.company, searchTerm))
+      matchType = "COMPANY";
+    else if (partialMatch(item.reason, searchTerm))
+      matchType = "REASON";
+
+    if (matchType) {
+      results.push({
+        module: "FAULTY STOCK",
+        type: "FAULTY_ITEM",
+        id: `faulty-${item.id}`,
+        data: item,
+        matchType,
+        display: {
+          title: `${item.item} - ${item.company}`,
+          subtitle: `GPW: ${item.gpw}`,
+          meta: [
+            `Status: ${item.repairStage}`,
+            `Reason: ${item.reason}`,
+          ],
+        },
+      });
+    }
+  });
+
+  // ---------- CONDEMNED ----------
+  CONDEMNEDItems.forEach((item) => {
+    let matchType = null;
+
+    if (partialMatch(item.gpw, searchTerm))
+      matchType = "GPW/SERIAL";
+    else if (partialMatch(item.item, searchTerm))
+      matchType = "ITEM";
+    else if (partialMatch(item.company, searchTerm))
+      matchType = "COMPANY";
+    else if (partialMatch(item.reason, searchTerm))
+      matchType = "REASON";
+
+    if (matchType) {
+      results.push({
+        module: "FAULTY STOCK",
+        type: "CONDEMNED_ITEM",
+        id: `cond-${item.id}`,
+        data: item,
+        matchType,
+        display: {
+          title: `${item.item} - ${item.company}`,
+          subtitle: `GPW: ${item.gpw}`,
+          meta: [
+            "CONDEMNED",
+            `Reason: ${item.reason}`,
+          ],
+        },
+      });
+    }
+  });
+
+  return results;
+};
 /**
  * Search Issue Vouchers (Temporary & Permanent)
  */
@@ -358,17 +433,30 @@ export const performGlobalSearch = (searchTerm, storeData) => {
   }
 
   const {
-    inventory = [],
-    issueVouchers = [],
-    permanentVouchers = [],
-    receives = [],
-    users = [],
-  } = storeData;
+  inventory = [],
+  issueVouchers = [],
+  permanentVouchers = [],
+  receives = [],
+  users = [],
+
+  faultyItems = [],
+  CONDEMNEDItems = [],
+} = storeData;
+
 
   const allResults = [];
 
   // Search inventory
   allResults.push(...searchInventory(inventory, searchTerm));
+
+  // Search Faulty Stock
+allResults.push(
+  ...searchFaultyStock(
+    faultyItems,
+    CONDEMNEDItems,
+    searchTerm
+  )
+);
 
   // Search issue vouchers
   allResults.push(
@@ -409,13 +497,14 @@ export const performGlobalSearch = (searchTerm, storeData) => {
 
   // Convert to array and maintain order
   const moduleOrder = [
-    "INVENTORY",
-    "TEMPORARY IV",
-    "PERMANENT IV",
-    "POLICE STATION DATA",
-    "MOBILE VEHICLE DATA",
-    "USER MANAGEMENT",
-  ];
+  "INVENTORY",
+  "FAULTY STOCK",
+  "TEMPORARY IV",
+  "PERMANENT IV",
+  "POLICE STATION DATA",
+  "MOBILE VEHICLE DATA",
+  "USER MANAGEMENT",
+];
 
   const orderedResults = [];
   moduleOrder.forEach((module) => {

@@ -97,13 +97,14 @@ function GlobalSearch({
   });
 
   const moduleOrder = [
-    "INVENTORY",
-    "TEMPORARY IV",
-    "PERMANENT IV",
-    "POLICE STATION DATA",
-    "MOBILE VEHICLE DATA",
-    "USER MANAGEMENT",
-  ];
+  "INVENTORY",
+  "FAULTY STOCK",
+  "TEMPORARY IV",
+  "PERMANENT IV",
+  "POLICE STATION DATA",
+  "MOBILE VEHICLE DATA",
+  "USER MANAGEMENT",
+];
 
   let resultIndex = 0;
   const orderedModules = [];

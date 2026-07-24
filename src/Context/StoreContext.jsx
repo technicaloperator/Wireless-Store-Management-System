@@ -160,7 +160,34 @@ useEffect(() => {
   );
 }, [currentUser]);
 
+// ================= ACTIVITY LOGGER =================
 
+const addActivity = ({
+  module,
+  action,
+  details = "",
+  user = currentUser || "SYSTEM",
+}) => {
+  const now = new Date();
+
+  const newActivity = {
+    id: Date.now(),
+
+    date: now.toLocaleDateString("en-GB"),
+
+    time: now.toLocaleTimeString("en-GB"),
+
+    user,
+
+    module,
+
+    action,
+
+    details,
+  };
+
+  setActivity((prev) => [newActivity, ...prev]);
+};
 
 return (
   <StoreContext.Provider
@@ -182,6 +209,7 @@ setCONDEMNEDItems,
 
   activity,
   setActivity,
+  addActivity,
 
   issueVouchers,
   setIssueVouchers,

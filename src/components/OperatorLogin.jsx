@@ -4,13 +4,11 @@ import logo from "../assets/logo.png";
 import "./OperatorLogin.css";
 
 function OperatorLogin({ setOperator }) {
-
-  const {
-    users,
-    setCurrentUser,
-    activity,
-    setActivity,
-  } = useStore();
+const {
+  users,
+  setCurrentUser,
+  addActivity,
+} = useStore();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -50,15 +48,12 @@ console.log("Password entered:", password);
 
     setCurrentUser(user.username);
 
-    setActivity([
-      {
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString(),
-        operator: user.username,
-        activity: "LOGIN",
-      },
-      ...activity,
-    ]);
+    addActivity({
+  module: "LOGIN",
+  action: "LOGIN",
+  details: "USER LOGGED INTO WSMS",
+  user: user.username,
+});
   };
   return (
   <div className="login-page">

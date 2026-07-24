@@ -6,14 +6,13 @@ import { useStore } from "../../Context/StoreContext";
 import { items } from "../../data/masterData";
 
 function Inventory() {
-  const {
-    inventory,
-    setInventory,
-    issueVouchers,
-    currentUser,
-    activity,
-    setActivity,
-  } = useStore();
+ const {
+  inventory,
+  setInventory,
+  issueVouchers,
+  currentUser,
+  addActivity,
+} = useStore();
   const DELETE_CODE = "12345";
 
   const [highlightedItemId, setHighlightedItemId] = useState(null);
@@ -59,16 +58,13 @@ function Inventory() {
     const deletedItem = inventory.find((item) => item.id === id);
 
     if (deletedItem) {
-      setActivity((prev) => [
-        {
-          date: new Date().toLocaleDateString(),
-          time: new Date().toLocaleTimeString(),
-          operator: currentUser,
-          activity: `DELETED ${deletedItem.item} ${deletedItem.company} ${deletedItem.number}`,
-        },
-        ...prev,
-      ]);
-    }
+  addActivity({
+    module: "INVENTORY",
+    action: "DELETE",
+    details: `DELETED ${deletedItem.item} ${deletedItem.company} ${deletedItem.number}`,
+    user: currentUser,
+  });
+}
 
     setInventory(inventory.filter((item) => item.id !== id));
   };
@@ -245,16 +241,13 @@ const updateStatus = (
   setInventory(updated);
 
   if (existingItem && existingItem.status === "ISSUED" && newStatus === "AVAILABLE") {
-    setActivity((prev) => [
-      {
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString(),
-        operator: currentUser,
-        activity: `RECEIVED ${existingItem.item} ${existingItem.number}`,
-      },
-      ...prev,
-    ]);
-  }
+  addActivity({
+    module: "INVENTORY",
+    action: "RECEIVE",
+    details: `RECEIVED ${existingItem.item} ${existingItem.number}`,
+    user: currentUser,
+  });
+}
 };
   const addSingleItem = () => {
     if (!newItem.company || !newItem.number) return;
@@ -304,16 +297,12 @@ if (duplicate) {
 };
 
     setInventory([...inventory, obj]);
-
-    setActivity((prev) => [
-      {
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString(),
-        operator: currentUser,
-        activity: `ADDED ${newItem.item} ${newItem.company} ${newItem.number}`,
-      },
-      ...prev,
-    ]);
+addActivity({
+  module: "INVENTORY",
+  action: "ADD",
+  details: `ADDED ${newItem.item} ${newItem.company} ${newItem.number}`,
+  user: currentUser,
+});
 
     setShowAdd(false);
 
@@ -383,16 +372,13 @@ for (let i = Number(from); i <= Number(to); i++) {
     }
 
     setInventory(arr);
-
-    setActivity((prev) => [
-      {
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString(),
-        operator: currentUser,
-        activity: `ADDED ${to - from + 1} ${newItem.item} ITEMS (${from}-${to})`,
-      },
-      ...prev,
-    ]);
+    
+addActivity({
+  module: "INVENTORY",
+  action: "BULK ADD",
+  details: `ADDED ${to - from + 1} ${newItem.item} ITEMS (${from}-${to})`,
+  user: currentUser,
+});
 
     setShowBulk(false);
   };

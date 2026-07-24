@@ -11,6 +11,8 @@ function PermanentIV() {
     setInventory,
     permanentVouchers = [],
     setPermanentVouchers,
+    currentUser,
+    addActivity,
   } = useStore();
 
   const [selectedVoucher, setSelectedVoucher] = useState(null);
@@ -150,24 +152,32 @@ function PermanentIV() {
         }
         return row;
       });
-
       setInventory(updatedInventory);
+
+      addActivity({
+        module: "PERMANENT IV",
+        action: "RECEIVE",
+        details: item.isExtra
+          ? `RECEIVED EXTRA ${item.item} x${item.quantity || 1}`
+          : `RECEIVED ${item.item} ${item.company} ${item.gpwNumbers}`,
+        user: currentUser,
+      });
     }
   };
 
   const generatePdf = (voucher) => {
-  setDownloadVoucher(voucher);
+    setDownloadVoucher(voucher);
 
-  setTimeout(async () => {
-    if (downloadVoucherRef.current) {
-      await downloadVoucherRef.current.downloadPdf(
-        voucher.voucherNumber
-      );
-    }
+    setTimeout(async () => {
+      if (downloadVoucherRef.current) {
+        await downloadVoucherRef.current.downloadPdf(
+          voucher.voucherNumber
+        );
+      }
 
-    setDownloadVoucher(null);
-  }, 150);
-};
+      setDownloadVoucher(null);
+    }, 150);
+  };
 
   const deleteVoucher = () => {
     if (!voucherToDelete) return;
@@ -177,6 +187,13 @@ function PermanentIV() {
     );
 
     setPermanentVouchers(updated);
+
+    addActivity({
+      module: "PERMANENT IV",
+      action: "DELETE",
+      details: `DELETED VOUCHER ${voucherToDelete.voucherNumber}`,
+      user: currentUser,
+    });
 
     if (selectedVoucher?.voucherNumber === voucherToDelete.voucherNumber) {
       setSelectedVoucher(null);
@@ -200,10 +217,17 @@ function PermanentIV() {
     );
 
     setPermanentVouchers(updatedVouchers);
+
+    addActivity({
+      module: "PERMANENT IV",
+      action: "REMARKS",
+      details: `UPDATED REMARKS FOR ${voucherForRemarks.voucherNumber}`,
+      user: currentUser,
+    });
+
     setVoucherForRemarks(null);
     setRemarksText("");
   };
-
   useEffect(() => {
     if (selectedVoucher) {
       const exists = permanentVouchers.some(

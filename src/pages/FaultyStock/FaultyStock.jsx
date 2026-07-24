@@ -9,6 +9,7 @@ function FaultyStock() {
   // ===========================
 
   const [status, setStatus] = useState("FAULTY");
+  const [highlightId, setHighlightId] = useState(null);
 
 
 
@@ -30,6 +31,9 @@ const {
 
   CONDEMNEDItems,
   setCONDEMNEDItems,
+
+  currentUser,
+  addActivity,
 } = useStore();
 
 
@@ -65,6 +69,31 @@ const {
       inv.status === "AVAILABLE"
   )
   .map((inv) => inv.number);
+
+useEffect(() => {
+  const id = sessionStorage.getItem("highlight_faulty");
+
+  if (!id) return;
+
+  setHighlightId(id);
+
+  setTimeout(() => {
+    const row = document.getElementById(`faulty-${id}`);
+
+    if (row) {
+      row.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, 200);
+
+  setTimeout(() => {
+    setHighlightId(null);
+    sessionStorage.removeItem("highlight_faulty");
+  }, 3000);
+}, []);
+
   // ===========================
   // SHORT REASON
   // ===========================
@@ -142,10 +171,25 @@ setInventory(updatedInventory);
   // ===========================
 
   if (status === "FAULTY") {
-    setFaultyItems((prev) => [...prev, record]);
-  } else {
-    setCONDEMNEDItems((prev) => [...prev, record]);
-  }
+  setFaultyItems((prev) => [...prev, record]);
+
+  addActivity({
+    module: "FAULTY STOCK",
+    action: "MARK FAULTY",
+    details: `${selectedItem} ${selectedCompany} ${selectedGPW} MARKED AS FAULTY`,
+    user: currentUser,
+  });
+
+} else {
+  setCONDEMNEDItems((prev) => [...prev, record]);
+
+  addActivity({
+    module: "FAULTY STOCK",
+    action: "CONDEMNED",
+    details: `${selectedItem} ${selectedCompany} ${selectedGPW} MARKED AS CONDEMNED`,
+    user: currentUser,
+  });
+}
 
   // ===========================
   // RESET FORM
@@ -201,6 +245,12 @@ const handleSendForRepair = (id) => {
   });
 
 setInventory(updatedInventory);
+addActivity({
+  module: "FAULTY STOCK",
+  action: "SEND FOR REPAIR",
+  details: `${repairItem.item} ${repairItem.company} ${repairItem.gpw} SENT FOR REPAIR`,
+  user: currentUser,
+});
 };
 
 const handleRepaired = (id) => {
@@ -242,6 +292,12 @@ const handleRepaired = (id) => {
     return inv;
   });
 setInventory(updatedInventory);
+addActivity({
+  module: "FAULTY STOCK",
+  action: "REPAIRED",
+  details: `${repairedItem.item} ${repairedItem.company} ${repairedItem.gpw} REPAIRED AND RETURNED TO STOCK`,
+  user: currentUser,
+});
 };
 
 const handleCONDEMNED = (id) => {
@@ -273,6 +329,7 @@ const handleCONDEMNED = (id) => {
     },
   ]);
 
+
   const updatedInventory = inventory.map((inv) => {
     if (
       inv.item === CONDEMNEDItem.item &&
@@ -296,6 +353,41 @@ const handleCONDEMNED = (id) => {
   });
 
   setInventory(updatedInventory);
+  addActivity({
+  module: "FAULTY STOCK",
+  action: "CONDEMNED",
+  details: `${CONDEMNEDItem.item} ${CONDEMNEDItem.company} ${CONDEMNEDItem.gpw} MARKED AS CONDEMNED`,
+  user: currentUser,
+});
+
+};
+
+const handleDeleteCONDEMNED = (id) => {
+
+  if (
+    !window.confirm(
+      "Delete this condemned record?\n\nThis will remove it from the CONDEMNED table only."
+    )
+  ) {
+    return;
+  }
+
+  const deletedItem = CONDEMNEDItems.find(
+    (item) => item.id === id
+  );
+
+  if (!deletedItem) return;
+
+  setCONDEMNEDItems((prev) =>
+    prev.filter((item) => item.id !== id)
+  );
+
+  addActivity({
+    module: "FAULTY STOCK",
+    action: "DELETE CONDEMNED",
+    details: `${deletedItem.item} ${deletedItem.company} ${deletedItem.gpw} CONDEMNED RECORD DELETED`,
+    user: currentUser,
+  });
 
 };
   return (
@@ -464,7 +556,11 @@ const handleCONDEMNED = (id) => {
 
     faultyItems.map((item, index) => (
 
-      <tr key={item.id}>
+      <tr
+  key={item.id}
+  id={`faulty-${item.id}`}
+  className={String(highlightId) === String(item.id) ? "highlight-row" : ""}
+>
 
         <td>{index + 1}</td>
 
@@ -540,7 +636,7 @@ const handleCONDEMNED = (id) => {
 
   <table className="faulty-table">
 
-    <thead>
+   <thead>
   <tr>
     <th>No.</th>
     <th>Item</th>
@@ -569,30 +665,43 @@ const handleCONDEMNED = (id) => {
 
     CONDEMNEDItems.map((item, index) => (
 
-      <tr key={item.id}>
+      <tr
+  key={item.id}
+  id={`faulty-${item.id}`}
+  className={String(highlightId) === String(item.id) ? "highlight-row" : ""}
+>
 
-        <td>{index + 1}</td>
+  <td>{index + 1}</td>
 
-        <td>{item.item}</td>
+  <td>{item.item}</td>
 
-        <td>{item.company}</td>
+  <td>{item.company}</td>
 
-        <td>{item.gpw}</td>
+  <td>{item.gpw}</td>
 
-        <td
-          className="reason-cell"
-          title={item.reason}
-        >
-          {shortReason(item.reason)}
-        </td>
+  <td
+    className="reason-cell"
+    title={item.reason}
+  >
+    {shortReason(item.reason)}
+  </td>
 
-        <td>{item.date}</td>
+  <td>{item.date}</td>
 
-        <td>CONDEMNED</td>
+  <td>CONDEMNED</td>
 
-        <td>-</td>
+  
 
-      </tr>
+  <td>
+    <button
+      className="delete-btn"
+      onClick={() => handleDeleteCONDEMNED(item.id)}
+    >
+      DELETE
+    </button>
+  </td>
+
+</tr>
 
     ))
 

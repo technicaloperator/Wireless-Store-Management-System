@@ -118,6 +118,15 @@ function App() {
         sessionStorage.setItem("highlight_user", result.data.username);
         break;
 
+        case "FAULTY_ITEM":
+case "CONDEMNED_ITEM":
+  setPage("faulty-stock");
+  sessionStorage.setItem(
+    "highlight_faulty",
+    result.data.id
+  );
+  break;
+
       default:
         break;
     }
