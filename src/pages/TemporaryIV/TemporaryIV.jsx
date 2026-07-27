@@ -284,13 +284,13 @@ function TemporaryIV() {
   setDownloadVoucher(voucher);
 
   setTimeout(async () => {
-    console.log(downloadVoucherRef.current);
+    
 
     if (downloadVoucherRef.current) {
-      console.log("Calling downloadPdf...");
+      
       await downloadVoucherRef.current.downloadPdf(voucher.voucherNumber);
     } else {
-      console.log("Ref is NULL");
+      
     }
 
     setDownloadVoucher(null);

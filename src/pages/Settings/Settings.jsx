@@ -24,17 +24,27 @@ function Settings() {
 
   const [backupInfo, setBackupInfo] = useState(null);
 
+  const [lastBackup, setLastBackup] = useState(
+    localStorage.getItem("wsms_last_backup") || "Not Available"
+  );
+
+  const [lastRestore, setLastRestore] = useState(
+    localStorage.getItem("wsms_last_restore") || "Not Available"
+  );
+
   const [showRestoreDialog, setShowRestoreDialog] = useState(false);
 
   const [restoreData, setRestoreData] = useState(null);
 
   const [showClearDialog, setShowClearDialog] = useState(false);
+
   const [clearOptions, setClearOptions] = useState({
     inventory: false,
     issues: false,
     receives: false,
     activity: false,
     issueVouchers: false,
+    permanentVouchers: false,
   });
 
   // ==========================================
@@ -42,13 +52,23 @@ function Settings() {
   // ==========================================
 
   const handleBackup = () => {
+
     const now = new Date();
+
+    const formattedDate = now.toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
 
     const backup = {
       application: "WSMS",
-      version: "1.0",
-
-      backupDate: now.toLocaleString(),
+      version: "1.3",
+      backupDate: formattedDate,
 
       inventory,
       issues,
@@ -86,10 +106,12 @@ function Settings() {
 
     localStorage.setItem(
       "wsms_last_backup",
-      now.toLocaleString()
+      formattedDate
     );
 
-    setBackupInfo(now.toLocaleString());
+    setLastBackup(formattedDate);
+
+    setBackupInfo(formattedDate);
 
     setMessage("BACKUP CREATED SUCCESSFULLY.");
   };
@@ -103,6 +125,7 @@ function Settings() {
   };
 
   const handleRestoreFile = (e) => {
+
     const file = e.target.files[0];
 
     if (!file) return;
@@ -110,7 +133,9 @@ function Settings() {
     const reader = new FileReader();
 
     reader.onload = (event) => {
+
       try {
+
         const data = JSON.parse(event.target.result);
 
         setRestoreData(data);
@@ -122,15 +147,19 @@ function Settings() {
         alert("INVALID BACKUP FILE.");
 
       }
+
     };
 
     reader.readAsText(file);
+
   };
-    // ==========================================
+
+  // ==========================================
   // RESTORE BACKUP
   // ==========================================
 
   const confirmRestore = () => {
+
     if (!restoreData) return;
 
     setInventory(restoreData.inventory || []);
@@ -140,7 +169,25 @@ function Settings() {
     setIssueVouchers(restoreData.issueVouchers || []);
     setPermanentVouchers(restoreData.permanentVouchers || []);
 
+    const restoreTime = new Date().toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+
+    localStorage.setItem(
+      "wsms_last_restore",
+      restoreTime
+    );
+
+    setLastRestore(restoreTime);
+
     setShowRestoreDialog(false);
+
     setRestoreData(null);
 
     setMessage("BACKUP RESTORED SUCCESSFULLY.");
@@ -151,31 +198,41 @@ function Settings() {
   // ==========================================
 
   const openClearDialog = () => {
+
     setClearOptions({
       inventory: false,
       issues: false,
       receives: false,
       activity: false,
       issueVouchers: false,
+      permanentVouchers: false,
     });
+
     setShowClearDialog(true);
+
   };
 
   const toggleClearOption = (key) => {
+
     setClearOptions((prev) => ({
       ...prev,
       [key]: !prev[key],
     }));
+
   };
 
   const confirmClearData = () => {
+
     const selectedKeys = Object.keys(clearOptions).filter(
       (key) => clearOptions[key]
     );
 
     if (selectedKeys.length === 0) {
+
       alert("Please select at least one data type to clear.");
+
       return;
+
     }
 
     const ok = window.confirm(
@@ -194,9 +251,9 @@ function Settings() {
     if (clearOptions.permanentVouchers) setPermanentVouchers([]);
 
     setShowClearDialog(false);
+
     setMessage("SELECTED DATA HAS BEEN CLEARED.");
   };
-
   return (
     <div className="settings-page">
 
@@ -205,34 +262,47 @@ function Settings() {
       {/* ================= SOFTWARE INFO ================= */}
 
       <table className="settings-table">
-        <tbody>
 
-          <tr>
-            <td>DEPARTMENT</td>
-            <td>WIRELESS DEPARTMENT MORBI</td>
-          </tr>
+  <tbody>
 
-          <tr>
-            <td>VERSION</td>
-            <td>WSMS v1.0</td>
-          </tr>
+    <tr>
+      <td>Department</td>
+      <td>Wireless Department, Morbi</td>
+    </tr>
 
-          <tr>
-            <td>STORAGE</td>
-            <td>BROWSER LOCAL STORAGE</td>
-          </tr>
+    <tr>
+      <td>Software</td>
+      <td>Wireless Store Management System (WSMS v1.3)</td>
+    </tr>
 
-          <tr>
-            <td>LAST BACKUP</td>
-            <td>
-              {backupInfo ||
-                localStorage.getItem("wsms_last_backup") ||
-                "NEVER"}
-            </td>
-          </tr>
+    <tr>
+      <td>Storage</td>
+      <td>Browser Local Storage</td>
+    </tr>
 
-        </tbody>
-      </table>
+    <tr>
+  <td>Last Backup</td>
+  <td>{lastBackup}</td>
+</tr>
+
+<tr>
+  <td>Last Restore</td>
+  <td>{lastRestore}</td>
+</tr>
+
+    <tr>
+      <td>Developed By</td>
+      <td>Nirav N. Loriya</td>
+    </tr>
+
+    <tr>
+      <td>Build Date</td>
+      <td>August 2026</td>
+    </tr>
+
+  </tbody>
+
+</table>
 
       {/* ================= DATA MANAGEMENT ================= */}
 
