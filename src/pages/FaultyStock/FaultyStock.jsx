@@ -29,8 +29,8 @@ const {
   faultyItems,
   setFaultyItems,
 
-  CONDEMNEDItems,
-  setCONDEMNEDItems,
+  UNSERVICEABLEItems,
+  setUNSERVICEABLEItems,
 
   currentUser,
   addActivity,
@@ -149,7 +149,7 @@ useEffect(() => {
       action:
         status === "FAULTY"
           ? "MARKED FAULTY"
-          : "CONDEMNED",
+          : "UNSERVICEABLE",
 
       date: new Date().toLocaleDateString(),
 
@@ -167,7 +167,7 @@ useEffect(() => {
 setInventory(updatedInventory);
 
   // ===========================
-  // SAVE TO FAULTY / CONDEMNED
+  // SAVE TO FAULTY / UNSERVICEABLE
   // ===========================
 
   if (status === "FAULTY") {
@@ -181,12 +181,12 @@ setInventory(updatedInventory);
   });
 
 } else {
-  setCONDEMNEDItems((prev) => [...prev, record]);
+  setUNSERVICEABLEItems((prev) => [...prev, record]);
 
   addActivity({
     module: "FAULTY STOCK",
-    action: "CONDEMNED",
-    details: `${selectedItem} ${selectedCompany} ${selectedGPW} MARKED AS CONDEMNED`,
+    action: "UNSERVICEABLE",
+    details: `${selectedItem} ${selectedCompany} ${selectedGPW} MARKED AS UNSERVICEABLE`,
     user: currentUser,
   });
 }
@@ -300,20 +300,20 @@ addActivity({
 });
 };
 
-const handleCONDEMNED = (id) => {
+const handleUNSERVICEABLE = (id) => {
   if (
     !window.confirm(
-      "Are you sure you want to CONDEMNED this item?\n\nThis action should only be used for items beyond repair."
+      "Are you sure you want to UNSERVICEABLE this item?\n\nThis action should only be used for items beyond repair."
     )
   ) {
     return;
   }
 
-  const CONDEMNEDItem = faultyItems.find(
+  const UNSERVICEABLEItem = faultyItems.find(
     (item) => item.id === id
   );
 
-  if (!CONDEMNEDItem) return;
+  if (!UNSERVICEABLEItem) return;
 
   const updatedFaulty = faultyItems.filter(
     (item) => item.id !== id
@@ -321,28 +321,28 @@ const handleCONDEMNED = (id) => {
 
   setFaultyItems(updatedFaulty);
 
-  setCONDEMNEDItems((prev) => [
+  setUNSERVICEABLEItems((prev) => [
     ...prev,
     {
-      ...CONDEMNEDItem,
-      repairStage: "CONDEMNED",
+      ...UNSERVICEABLEItem,
+      repairStage: "UNSERVICEABLE",
     },
   ]);
 
 
   const updatedInventory = inventory.map((inv) => {
     if (
-      inv.item === CONDEMNEDItem.item &&
-      inv.company === CONDEMNEDItem.company &&
-      inv.number === CONDEMNEDItem.gpw
+      inv.item === UNSERVICEABLEItem.item &&
+      inv.company === UNSERVICEABLEItem.company &&
+      inv.number === UNSERVICEABLEItem.gpw
     ) {
       return {
         ...inv,
-        status: "CONDEMNED",
+        status: "UNSERVICEABLE",
         history: [
           ...(inv.history || []),
           {
-            action: "CONDEMNED",
+            action: "UNSERVICEABLE",
             date: new Date().toLocaleDateString(),
           },
         ],
@@ -355,37 +355,37 @@ const handleCONDEMNED = (id) => {
   setInventory(updatedInventory);
   addActivity({
   module: "FAULTY STOCK",
-  action: "CONDEMNED",
-  details: `${CONDEMNEDItem.item} ${CONDEMNEDItem.company} ${CONDEMNEDItem.gpw} MARKED AS CONDEMNED`,
+  action: "UNSERVICEABLE",
+  details: `${UNSERVICEABLEItem.item} ${UNSERVICEABLEItem.company} ${UNSERVICEABLEItem.gpw} MARKED AS UNSERVICEABLE`,
   user: currentUser,
 });
 
 };
 
-const handleDeleteCONDEMNED = (id) => {
+const handleDeleteUNSERVICEABLE = (id) => {
 
   if (
     !window.confirm(
-      "Delete this condemned record?\n\nThis will remove it from the CONDEMNED table only."
+      "Delete this UNSERVICEABLE record?\n\nThis will remove it from the UNSERVICEABLE table only."
     )
   ) {
     return;
   }
 
-  const deletedItem = CONDEMNEDItems.find(
+  const deletedItem = UNSERVICEABLEItems.find(
     (item) => item.id === id
   );
 
   if (!deletedItem) return;
 
-  setCONDEMNEDItems((prev) =>
+  setUNSERVICEABLEItems((prev) =>
     prev.filter((item) => item.id !== id)
   );
 
   addActivity({
     module: "FAULTY STOCK",
-    action: "DELETE CONDEMNED",
-    details: `${deletedItem.item} ${deletedItem.company} ${deletedItem.gpw} CONDEMNED RECORD DELETED`,
+    action: "DELETE UNSERVICEABLE",
+    details: `${deletedItem.item} ${deletedItem.company} ${deletedItem.gpw} UNSERVICEABLE RECORD DELETED`,
     user: currentUser,
   });
 
@@ -478,16 +478,16 @@ const handleDeleteCONDEMNED = (id) => {
                     checked={status === "FAULTY"}
                     onChange={() => setStatus("FAULTY")}
                 />
-                Faulty
+                FAULTY
             </label>
 
             <label>
                 <input
                     type="radio"
-                    checked={status === "CONDEMNED"}
-                    onChange={() => setStatus("CONDEMNED")}
+                    checked={status === "UNSERVICEABLE"}
+                    onChange={() => setStatus("UNSERVICEABLE")}
                 />
-                CONDEMNED
+                UNSERVICEABLE
             </label>
 
         </div>
@@ -526,7 +526,7 @@ const handleDeleteCONDEMNED = (id) => {
 
         <th>Company</th>
 
-        <th>GPW / Serial</th>
+        <th>GPW / Serial No.</th>
 
         <th>Reason</th>
 
@@ -602,11 +602,11 @@ const handleDeleteCONDEMNED = (id) => {
 </button>
 
             <button
-  className="CONDEMNED-btn"
+  className="UNSERVICEABLE-btn"
   disabled={item.repairStage !== "UNDER REPAIR"}
-  onClick={() => handleCONDEMNED(item.id)}
+  onClick={() => handleUNSERVICEABLE(item.id)}
 >
-  CONDEMNED
+  UNSERVICEABLE
 </button>
 
           </div>
@@ -626,12 +626,12 @@ const handleDeleteCONDEMNED = (id) => {
 </div>
 
 
-{/* ================= CONDEMNED ITEMS ================= */}
+{/* ================= UNSERVICEABLE ITEMS ================= */}
 
 <div className="faulty-table-card">
 
-  <div className="table-title CONDEMNED-title">
-    CONDEMNED ITEMS
+  <div className="table-title UNSERVICEABLE-title">
+    UNSERVICEABLE ITEMS
   </div>
 
   <table className="faulty-table">
@@ -641,7 +641,7 @@ const handleDeleteCONDEMNED = (id) => {
     <th>No.</th>
     <th>Item</th>
     <th>Company</th>
-    <th>GPW / Serial</th>
+    <th>GPW / Serial No.</th>
     <th>Reason</th>
     <th>Date</th>
     <th>Status</th>
@@ -651,19 +651,19 @@ const handleDeleteCONDEMNED = (id) => {
 
     <tbody>
 
-{(CONDEMNEDItems || []).length === 0 ? (
+{(UNSERVICEABLEItems || []).length === 0 ? (
 
     <tr>
 
       <td colSpan="8" className="empty-table">
-        NO CONDEMNED ITEMS
+        NO UNSERVICEABLE ITEMS
       </td>
 
     </tr>
 
   ) : (
 
-    CONDEMNEDItems.map((item, index) => (
+    UNSERVICEABLEItems.map((item, index) => (
 
       <tr
   key={item.id}
@@ -688,14 +688,14 @@ const handleDeleteCONDEMNED = (id) => {
 
   <td>{item.date}</td>
 
-  <td>CONDEMNED</td>
+  <td>UNSERVICEABLE</td>
 
   
 
   <td>
     <button
       className="delete-btn"
-      onClick={() => handleDeleteCONDEMNED(item.id)}
+      onClick={() => handleDeleteUNSERVICEABLE(item.id)}
     >
       DELETE
     </button>

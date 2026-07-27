@@ -97,11 +97,11 @@ const searchInventory = (inventory, searchTerm) => {
   return results;
 };
 /**
- * Search Faulty & Condemned Stock
+ * Search Faulty & UNSERVICEABLE Stock
  */
 const searchFaultyStock = (
   faultyItems,
-  CONDEMNEDItems,
+  UNSERVICEABLEItems,
   searchTerm
 ) => {
   const results = [];
@@ -138,8 +138,8 @@ const searchFaultyStock = (
     }
   });
 
-  // ---------- CONDEMNED ----------
-  CONDEMNEDItems.forEach((item) => {
+  // ---------- UNSERVICEABLE ----------
+  UNSERVICEABLEItems.forEach((item) => {
     let matchType = null;
 
     if (partialMatch(item.gpw, searchTerm))
@@ -154,7 +154,7 @@ const searchFaultyStock = (
     if (matchType) {
       results.push({
         module: "FAULTY STOCK",
-        type: "CONDEMNED_ITEM",
+        type: "UNSERVICEABLE_ITEM",
         id: `cond-${item.id}`,
         data: item,
         matchType,
@@ -162,7 +162,7 @@ const searchFaultyStock = (
           title: `${item.item} - ${item.company}`,
           subtitle: `GPW: ${item.gpw}`,
           meta: [
-            "CONDEMNED",
+            "UNSERVICEABLE",
             `Reason: ${item.reason}`,
           ],
         },
@@ -440,7 +440,7 @@ export const performGlobalSearch = (searchTerm, storeData) => {
   users = [],
 
   faultyItems = [],
-  CONDEMNEDItems = [],
+  UNSERVICEABLEItems = [],
 } = storeData;
 
 
@@ -453,7 +453,7 @@ export const performGlobalSearch = (searchTerm, storeData) => {
 allResults.push(
   ...searchFaultyStock(
     faultyItems,
-    CONDEMNEDItems,
+    UNSERVICEABLEItems,
     searchTerm
   )
 );

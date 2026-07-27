@@ -27,9 +27,9 @@ const [faultyItems, setFaultyItems] = useState(() => {
   return saved ? JSON.parse(saved) : [];
 });
 
-// ---------------- CONDEMNED STOCK ----------------
-const [CONDEMNEDItems, setCONDEMNEDItems] = useState(() => {
-  const saved = localStorage.getItem("wsms_CONDEMNEDStock");
+// ---------------- UNSERVICEABLE STOCK ----------------
+const [UNSERVICEABLEItems, setUNSERVICEABLEItems] = useState(() => {
+  const saved = localStorage.getItem("wsms_UNSERVICEABLEStock");
   return saved ? JSON.parse(saved) : [];
 });
 
@@ -137,10 +137,10 @@ useEffect(() => {
 
 useEffect(() => {
   localStorage.setItem(
-    "wsms_CONDEMNEDStock",
-    JSON.stringify(CONDEMNEDItems)
+    "wsms_UNSERVICEABLEStock",
+    JSON.stringify(UNSERVICEABLEItems)
   );
-}, [CONDEMNEDItems]);
+}, [UNSERVICEABLEItems]);
 
   useEffect(() => {
     localStorage.setItem("wsms_activity", JSON.stringify(activity));
@@ -201,8 +201,8 @@ return (
 faultyItems,
 setFaultyItems,
 
-CONDEMNEDItems,
-setCONDEMNEDItems,
+UNSERVICEABLEItems,
+setUNSERVICEABLEItems,
 
   receives,
   setReceives,

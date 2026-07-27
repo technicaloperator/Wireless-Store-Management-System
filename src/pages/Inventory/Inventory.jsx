@@ -13,7 +13,7 @@ function Inventory() {
   currentUser,
   addActivity,
 } = useStore();
-  const DELETE_CODE = "12345";
+  const DELETE_CODE = "123";
 
   const [highlightedItemId, setHighlightedItemId] = useState(null);
 
@@ -105,7 +105,7 @@ function Inventory() {
   AVAILABLE: 1,
   ISSUED: 2,
   FAULTY: 3,
-  CONDEMNED: 4, // or CONDEMNED if you're still using that
+  UNSERVICEABLE: 4, // or UNSERVICEABLE if you're still using that
 };
 
 const filteredInventory = inventory
@@ -286,7 +286,7 @@ if (duplicate) {
   faultyDate: "",
   repairSentDate: "",
   repairedDate: "",
-  CONDEMNEDDate: "",
+  UNSERVICEABLEDate: "",
 
   history: [
     {
@@ -360,7 +360,7 @@ for (let i = Number(from); i <= Number(to); i++) {
   faultyDate: "",
   repairSentDate: "",
   repairedDate: "",
-  CONDEMNEDDate: "",
+  UNSERVICEABLEDate: "",
 
   history: [
     {
@@ -413,7 +413,7 @@ addActivity({
     "AVAILABLE",
     "ISSUED",
     "FAULTY",
-    "CONDEMNED",
+    "UNSERVICEABLE",
   ];
     return (
     <div className="inventory-page">

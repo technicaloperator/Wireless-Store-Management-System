@@ -11,23 +11,36 @@ function Layout({
 }) 
 {
   const { currentUser, activity, setActivity } = useStore();
-  const menu = [
-  { id: "dashboard", label: "🏠 Dashboard" },
-  { id: "inventory", label: "📦 Inventory" },
-  { id: "issue", label: "📤 Issue" },
-  { id: "receive", label: "📥 Receive" },
-  { id: "faulty-stock", label: "🔧 Faulty Stock" },
-  { id: "police-station-data", label: "🏢 Police Station Data" },
-  { id: "mobile-vehicle-data", label: "🚓 Mobile Vehicle Data" },
-  { id: "activity", label: "📝 Activity Log" },
+const menuGroups = [
+  [
+    { id: "dashboard", label: "📊 Dashboard" },
+    { id: "inventory", label: "🗃️ Inventory" },
+  ],
 
-  ...(currentUser === "ADMIN"
-    ? [{ id: "users", label: "👥 User Management" }]
-    : []),
+  [
+    { id: "issue", label: "📤 Issue" },
+    { id: "receive", label: "📥 Receive" },
+    { id: "faulty-stock", label: "🛠️ Faulty Stock" },
+  ],
 
-  { id: "settings", label: "⚙ Settings" },
-  { id: "temporary", label: "📋 Temporary IV" },
-  { id: "permanent", label: "📌 Permanent IV" },
+  [
+    { id: "police-station-data", label: "🏛️ Police Station Data" },
+    { id: "mobile-vehicle-data", label: "🚔 Mobile Vehicle Data" },
+  ],
+
+  [
+    { id: "temporary", label: "📝 Temporary IV" },
+    { id: "permanent", label: "📑 Permanent IV" },
+  ],
+
+  [
+    { id: "activity", label: "📋 Activity Log" },
+  ],
+
+  [
+    { id: "users", label: "👥 User Management" },
+    { id: "settings", label: "⚙️ Settings" },
+  ],
 ];
 
   return (
@@ -35,17 +48,23 @@ function Layout({
       <div className="sidebar">
         <h2>WSMS</h2>
 
-        {menu.map((item) => (
-          <div
-            key={item.id}
-            className={`menu-item ${
-              currentPage === item.id ? "active" : ""
-            }`}
-            onClick={() => setCurrentPage(item.id)}
-          >
-            {item.label}
-          </div>
-        ))}
+        {menuGroups.map((group, groupIndex) => (
+  <div key={groupIndex} className="menu-group">
+
+    {group.map((item) => (
+      <div
+        key={item.id}
+        className={`menu-item ${
+          currentPage === item.id ? "active" : ""
+        }`}
+        onClick={() => setCurrentPage(item.id)}
+      >
+        {item.label}
+      </div>
+    ))}
+
+  </div>
+))}
       </div>
 
       <div className="main">

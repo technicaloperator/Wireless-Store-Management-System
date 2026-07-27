@@ -259,7 +259,6 @@
 .close-btn:hover{
     background:#0b5ed7;
 }
-
 /* ===========================
    TABLE
 =========================== */
@@ -267,7 +266,7 @@
 .inventory-table{
     width:100%;
     border-collapse:collapse;
-    background:white;
+    background:#fff;
     border-radius:10px;
     overflow:hidden;
     box-shadow:0 8px 20px rgba(0,0,0,.08);
@@ -278,19 +277,28 @@
 }
 
 .inventory-table th{
-    color:white;
-    padding:16px;
-    text-align:left;
+    padding:16px 14px;
+    color:#fff;
+    text-align:center;
     font-size:15px;
+    font-weight:700;
+    border-right:1px solid rgba(255,255,255,.12);
 }
 
 .inventory-table th:last-child{
-    text-align:right;
+    border-right:none;
 }
 
 .inventory-table td{
-    padding:15px 15px 15px 20px;
-    border-bottom:1px solid #ececec;
+    padding:15px 14px;
+    text-align:center;
+    vertical-align:middle;
+    border-bottom:1px solid #d8dde6;
+    border-right:1px solid #d8dde6;
+}
+
+.inventory-table td:last-child{
+    border-right:none;
 }
 
 .inventory-table tbody tr:hover{
@@ -300,7 +308,7 @@
 .inventory-table tbody tr.highlight-row{
     background:#fff3cd;
     box-shadow:0 0 0 2px #ffc107;
-    animation:highlight-pulse 0.6s ease-out;
+    animation:highlight-pulse .6s ease-out;
 }
 
 @keyframes highlight-pulse {

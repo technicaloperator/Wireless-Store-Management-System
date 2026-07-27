@@ -9,7 +9,7 @@ function Dashboard() {
   available: false,
   issued: false,
   faulty: false,
-  CONDEMNED: false,
+  UNSERVICEABLE: false,
 });
   const getStockData = (status) => {
     return items.map((item) => ({
@@ -23,7 +23,7 @@ function Dashboard() {
   const availableStock = getStockData("AVAILABLE");
   const issuedStock = getStockData("ISSUED");
   const faultyStock = getStockData("FAULTY");
-  const CONDEMNEDStock = getStockData("CONDEMNED");
+  const UNSERVICEABLEStock = getStockData("UNSERVICEABLE");
 
   const handleCardClick = (itemName, status) => {
     setDashboardFilter({
@@ -62,7 +62,7 @@ function Dashboard() {
       ? "ISSUED"
       : title.startsWith("Faulty")
       ? "FAULTY"
-      : "CONDEMNED";
+      : "UNSERVICEABLE";
 
   return (
     <div className={`stock-section ${statusClass}`}>
@@ -110,10 +110,10 @@ function Dashboard() {
 
   return (
     <div className="dashboard-page">
-      <StockSection title="Available Store Stock" data={availableStock} statusClass="available" />
+      <StockSection title="Available Stock" data={availableStock} statusClass="available" />
       <StockSection title="Issued Stock" data={issuedStock} statusClass="issued" />
       <StockSection title="Faulty Stock" data={faultyStock} statusClass="faulty" />
-      <StockSection title="CONDEMNED Stock" data={CONDEMNEDStock} statusClass="CONDEMNED" />
+      <StockSection title="Unserviceable Stock" data={UNSERVICEABLEStock} statusClass="UNSERVICEABLE" />
 
       {/* ================= DETAILS MODAL ================= */}
       {dashboardFilter.showDetails && (

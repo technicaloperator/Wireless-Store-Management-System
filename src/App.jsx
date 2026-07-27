@@ -58,6 +58,7 @@ function App() {
 
       case "police-station-data":
         return <PoliceStationData />;
+
       case "mobile-vehicle-data":
         return <MobileVehicleData />;
 
@@ -69,6 +70,7 @@ function App() {
 
       case "settings":
         return <Settings operator={operator} setOperator={setOperator} />;
+        
       case "permanent":
         return <PermanentIV operator={operator} />;
 
@@ -119,7 +121,7 @@ function App() {
         break;
 
         case "FAULTY_ITEM":
-case "CONDEMNED_ITEM":
+case "UNSERVICEABLE_ITEM":
   setPage("faulty-stock");
   sessionStorage.setItem(
     "highlight_faulty",
