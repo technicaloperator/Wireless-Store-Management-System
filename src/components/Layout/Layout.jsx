@@ -53,14 +53,18 @@ const menuGroups = [
 
     {group.map((item) => (
       <div
-        key={item.id}
-        className={`menu-item ${
-          currentPage === item.id ? "active" : ""
-        }`}
-        onClick={() => setCurrentPage(item.id)}
-      >
-        {item.label}
-      </div>
+  key={item.id}
+  className={`menu-item ${
+    currentPage === item.id ? "active" : ""
+  }`}
+  onClick={() => setCurrentPage(item.id)}
+>
+  <span className="menu-text">{item.label}</span>
+
+  {currentPage === item.id && (
+    <span className="menu-arrow">➡</span>
+  )}
+</div>
     ))}
 
   </div>

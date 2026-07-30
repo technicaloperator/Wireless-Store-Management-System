@@ -43,19 +43,16 @@ const [UNSERVICEABLEItems, setUNSERVICEABLEItems] = useState(() => {
   const getTodayDateString = () => new Date().toLocaleDateString();
 
   const [activity, setActivity] = useState(() => {
-    const saved = localStorage.getItem("wsms_activity");
-    if (!saved) return [];
+  const saved = localStorage.getItem("wsms_activity");
 
-    try {
-      const parsed = JSON.parse(saved);
-      const today = getTodayDateString();
-      return Array.isArray(parsed)
-        ? parsed.filter((entry) => entry.date === today)
-        : [];
-    } catch (error) {
-      return [];
-    }
-  });
+  if (!saved) return [];
+
+  try {
+    return JSON.parse(saved);
+  } catch {
+    return [];
+  }
+});
 
   // ---------------- ISSUE VOUCHERS ----------------
   const [issueVouchers, setIssueVouchers] = useState(() => {

@@ -10,6 +10,7 @@ function Inventory() {
   inventory,
   setInventory,
   issueVouchers,
+  permanentVouchers,
   currentUser,
   addActivity,
 } = useStore();
@@ -177,29 +178,36 @@ const filteredInventory = inventory
   };
 
   const isVoucherIssuedItem = (item) => {
-    const itemNumber = String(item.number).trim();
+  const itemNumber = String(item.number).trim();
 
-    return issueVouchers.some((voucher) =>
-      (voucher.items || []).some((entry) => {
-        if (entry.isExtra) return false;
-        return (
-          entry.item === item.item &&
-          entry.company === item.company &&
-          entry.gpwNumbers &&
-          entry.gpwNumbers.split(",").some((part) => {
-            const trimmed = part.trim();
-            if (trimmed.includes("-")) {
-              const [from, to] = trimmed.split("-").map(Number);
-              const num = Number(itemNumber);
-              return num >= from && num <= to;
-            }
-            return trimmed === itemNumber;
-          })
-        );
-      })
-    );
-  };
+  const allVouchers = [
+    ...issueVouchers,
+    ...permanentVouchers,
+  ];
 
+  return allVouchers.some((voucher) =>
+    (voucher.items || []).some((entry) => {
+      if (entry.isExtra) return false;
+
+      return (
+        entry.item === item.item &&
+        entry.company === item.company &&
+        entry.gpwNumbers &&
+        entry.gpwNumbers.split(",").some((part) => {
+          const trimmed = part.trim();
+
+          if (trimmed.includes("-")) {
+            const [from, to] = trimmed.split("-").map(Number);
+            const num = Number(itemNumber);
+            return num >= from && num <= to;
+          }
+
+          return trimmed === itemNumber;
+        })
+      );
+    })
+  );
+};
   const deleteItem = (id) => 
     {
     if (!window.confirm("DELETE THIS ITEM ?")) return;

@@ -418,21 +418,6 @@ function Issue() {
       setIssueVouchers([...issueVouchers, voucherRecord]);
     }
 
-    if (ivType === "PERMANENT") {
-  const activityText = [
-    serialDetails ? `ISSUED ${serialDetails}` : null,
-    extraDetails ? `ISSUED ${extraDetails}` : null,
-  ]
-    .filter(Boolean)
-    .join("; ") || `ISSUED ${issueList.length} ITEM(S)`;
-
-  addActivity({
-    module: "PERMANENT IV",
-    action: "ISSUE",
-    details: activityText,
-    user: currentUser,
-  });
-}
 
     const serialDetails = issueList
       .filter((entry) => !entry.isExtra)
@@ -450,16 +435,15 @@ function Issue() {
     ]
       .filter(Boolean)
       .join("; ") || `ISSUED ${issueList.length} ITEM(S)`;
-const activityData = {
-  module: "ISSUE",
+
+addActivity({
+  module: ivType === "PERMANENT"
+    ? "PERMANENT IV"
+    : "TEMPORARY IV",
   action: "ISSUE",
   details: activityText,
   user: currentUser,
-};
-
-console.log("ACTIVITY BEING SENT:", activityData);
-
-addActivity(activityData);
+});
 
     setVoucherData({
       ...voucherRecord,

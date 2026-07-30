@@ -219,8 +219,27 @@
 
 /* Active item always blue */
 .menu-item.active{
-    background:#0d6efd !important;
-    border-left:4px solid #ffc107;
-    padding-left:12px;
-    box-shadow:0 4px 14px rgba(13,110,253,.35);
+    animation: activeBlink 1.2s infinite;
+}
+
+@keyframes activeBlink{
+    0%,100%{
+        opacity:1;
+    }
+    50%{
+        opacity:.65;
+    }
+}
+.menu-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.menu-arrow{
+    font-size:18px;
+    font-weight:900;
+    color:#fff;
+    line-height:1;
+    margin-left:12px;
 }
