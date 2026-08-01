@@ -36,6 +36,21 @@ const {
   addActivity,
 } = useStore();
 
+  // Helpers
+  const logActivity = (module, action, details) =>
+    addActivity({ module, action, details, user: currentUser });
+
+  const pushInventoryHistoryByMatch = (inventoryArr, matchFn, updates = {}, historyEntry = {}) =>
+    inventoryArr.map((inv) =>
+      matchFn(inv)
+        ? {
+            ...inv,
+            ...updates,
+            history: [...(inv.history || []), historyEntry],
+          }
+        : inv
+    );
+
 
   // ===========================
   // DROPDOWN DATA
@@ -129,67 +144,41 @@ useEffect(() => {
   // ===========================
   // UPDATE INVENTORY STATUS
   // ===========================
-
-  const updatedInventory = inventory.map((inv) => {
-
-    if (
+  const updatedInventory = pushInventoryHistoryByMatch(
+    inventory,
+    (inv) =>
       inv.item === selectedItem &&
       inv.company === selectedCompany &&
-      inv.number === selectedGPW
-    ) {
-
-      return {
-  ...inv,
-
-  status: status,
-
-  history: [
-    ...(inv.history || []),
+      inv.number === selectedGPW,
+    { status: status },
     {
-      action:
-        status === "FAULTY"
-          ? "MARKED FAULTY"
-          : "UNSERVICEABLE",
-
+      action: status === "FAULTY" ? "MARKED FAULTY" : "UNSERVICEABLE",
       date: new Date().toLocaleDateString(),
-
       reason,
-    },
-  ],
-};
-
     }
+  );
 
-    return inv;
-
-  });
-
-setInventory(updatedInventory);
+  setInventory(updatedInventory);
 
   // ===========================
   // SAVE TO FAULTY / UNSERVICEABLE
   // ===========================
 
   if (status === "FAULTY") {
-  setFaultyItems((prev) => [...prev, record]);
-
-  addActivity({
-    module: "FAULTY STOCK",
-    action: "MARK FAULTY",
-    details: `${selectedItem} ${selectedCompany} ${selectedGPW} MARKED AS FAULTY`,
-    user: currentUser,
-  });
-
-} else {
-  setUNSERVICEABLEItems((prev) => [...prev, record]);
-
-  addActivity({
-    module: "FAULTY STOCK",
-    action: "UNSERVICEABLE",
-    details: `${selectedItem} ${selectedCompany} ${selectedGPW} MARKED AS UNSERVICEABLE`,
-    user: currentUser,
-  });
-}
+    setFaultyItems((prev) => [...prev, record]);
+    logActivity(
+      "FAULTY STOCK",
+      "MARK FAULTY",
+      `${selectedItem} ${selectedCompany} ${selectedGPW} MARKED AS FAULTY`
+    );
+  } else {
+    setUNSERVICEABLEItems((prev) => [...prev, record]);
+    logActivity(
+      "FAULTY STOCK",
+      "UNSERVICEABLE",
+      `${selectedItem} ${selectedCompany} ${selectedGPW} MARKED AS UNSERVICEABLE`
+    );
+  }
 
   // ===========================
   // RESET FORM
@@ -212,45 +201,28 @@ const handleSendForRepair = (id) => {
 
   // Update Faulty Table
   const updatedFaulty = faultyItems.map((item) =>
-    item.id === id
-      ? {
-          ...item,
-          repairStage: "UNDER REPAIR",
-        }
-      : item
+    item.id === id ? { ...item, repairStage: "UNDER REPAIR" } : item
   );
 
   setFaultyItems(updatedFaulty);
 
   // Update Inventory History
-  const updatedInventory = inventory.map((inv) => {
-    if (
+  const invUpdated = pushInventoryHistoryByMatch(
+    inventory,
+    (inv) =>
       inv.item === repairItem.item &&
       inv.company === repairItem.company &&
-      inv.number === repairItem.gpw
-    ) {
-      return {
-        ...inv,
-        history: [
-          ...(inv.history || []),
-          {
-            action: "SENT FOR REPAIR",
-            date: new Date().toLocaleDateString(),
-          },
-        ],
-      };
-    }
+      inv.number === repairItem.gpw,
+    {},
+    { action: "SENT FOR REPAIR", date: new Date().toLocaleDateString() }
+  );
 
-    return inv;
-  });
-
-setInventory(updatedInventory);
-addActivity({
-  module: "FAULTY STOCK",
-  action: "SEND FOR REPAIR",
-  details: `${repairItem.item} ${repairItem.company} ${repairItem.gpw} SENT FOR REPAIR`,
-  user: currentUser,
-});
+  setInventory(invUpdated);
+  logActivity(
+    "FAULTY STOCK",
+    "SEND FOR REPAIR",
+    `${repairItem.item} ${repairItem.company} ${repairItem.gpw} SENT FOR REPAIR`
+  );
 };
 
 const handleRepaired = (id) => {
@@ -264,40 +236,24 @@ const handleRepaired = (id) => {
 
   if (!repairedItem) return;
 
-  const updatedFaulty = faultyItems.filter(
-    (item) => item.id !== id
-  );
-
+  const updatedFaulty = faultyItems.filter((item) => item.id !== id);
   setFaultyItems(updatedFaulty);
 
-  const updatedInventory = inventory.map((inv) => {
-    if (
+  const invUpdated = pushInventoryHistoryByMatch(
+    inventory,
+    (inv) =>
       inv.item === repairedItem.item &&
       inv.company === repairedItem.company &&
-      inv.number === repairedItem.gpw
-    ) {
-      return {
-        ...inv,
-        status: "AVAILABLE",
-        history: [
-          ...(inv.history || []),
-          {
-            action: "REPAIRED",
-            date: new Date().toLocaleDateString(),
-          },
-        ],
-      };
-    }
-
-    return inv;
-  });
-setInventory(updatedInventory);
-addActivity({
-  module: "FAULTY STOCK",
-  action: "REPAIRED",
-  details: `${repairedItem.item} ${repairedItem.company} ${repairedItem.gpw} REPAIRED AND RETURNED TO STOCK`,
-  user: currentUser,
-});
+      inv.number === repairedItem.gpw,
+    { status: "AVAILABLE" },
+    { action: "REPAIRED", date: new Date().toLocaleDateString() }
+  );
+  setInventory(invUpdated);
+  logActivity(
+    "FAULTY STOCK",
+    "REPAIRED",
+    `${repairedItem.item} ${repairedItem.company} ${repairedItem.gpw} REPAIRED AND RETURNED TO STOCK`
+  );
 };
 
 const handleUNSERVICEABLE = (id) => {
@@ -315,10 +271,7 @@ const handleUNSERVICEABLE = (id) => {
 
   if (!UNSERVICEABLEItem) return;
 
-  const updatedFaulty = faultyItems.filter(
-    (item) => item.id !== id
-  );
-
+  const updatedFaulty = faultyItems.filter((item) => item.id !== id);
   setFaultyItems(updatedFaulty);
 
   setUNSERVICEABLEItems((prev) => [
@@ -329,36 +282,22 @@ const handleUNSERVICEABLE = (id) => {
     },
   ]);
 
-
-  const updatedInventory = inventory.map((inv) => {
-    if (
+  const invUpdated = pushInventoryHistoryByMatch(
+    inventory,
+    (inv) =>
       inv.item === UNSERVICEABLEItem.item &&
       inv.company === UNSERVICEABLEItem.company &&
-      inv.number === UNSERVICEABLEItem.gpw
-    ) {
-      return {
-        ...inv,
-        status: "UNSERVICEABLE",
-        history: [
-          ...(inv.history || []),
-          {
-            action: "UNSERVICEABLE",
-            date: new Date().toLocaleDateString(),
-          },
-        ],
-      };
-    }
+      inv.number === UNSERVICEABLEItem.gpw,
+    { status: "UNSERVICEABLE" },
+    { action: "UNSERVICEABLE", date: new Date().toLocaleDateString() }
+  );
 
-    return inv;
-  });
-
-  setInventory(updatedInventory);
-  addActivity({
-  module: "FAULTY STOCK",
-  action: "UNSERVICEABLE",
-  details: `${UNSERVICEABLEItem.item} ${UNSERVICEABLEItem.company} ${UNSERVICEABLEItem.gpw} MARKED AS UNSERVICEABLE`,
-  user: currentUser,
-});
+  setInventory(invUpdated);
+  logActivity(
+    "FAULTY STOCK",
+    "UNSERVICEABLE",
+    `${UNSERVICEABLEItem.item} ${UNSERVICEABLEItem.company} ${UNSERVICEABLEItem.gpw} MARKED AS UNSERVICEABLE`
+  );
 
 };
 

@@ -13,6 +13,24 @@ function UserManagement() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  // Helpers
+  const normalizeUsername = (value) =>
+    value.toUpperCase().replace(/[^A-Z ]/g, "");
+
+  const resetForm = () => {
+    setUsername("");
+    setPassword("");
+  };
+
+  const validateNewUser = (u, p) => {
+    if (!u.trim() || !p.trim()) return { ok: false, msg: "Enter Username and Password" };
+    const exists = users.some((x) => x.username.toLowerCase() === u.toLowerCase());
+    if (exists) return { ok: false, msg: "Username already exists." };
+    return { ok: true };
+  };
+
+  const confirmDialog = (msg) => window.confirm(msg);
+
   if (currentUser !== "ADMIN") {
     return (
       <div className="user-page">
@@ -26,17 +44,9 @@ function UserManagement() {
   }
 
   const addUser = () => {
-    if (!username.trim() || !password.trim()) {
-      alert("Enter Username and Password");
-      return;
-    }
-
-    const exists = users.some(
-      (u) => u.username.toLowerCase() === username.toLowerCase()
-    );
-
-    if (exists) {
-      alert("Username already exists.");
+    const v = validateNewUser(username, password);
+    if (!v.ok) {
+      alert(v.msg);
       return;
     }
 
@@ -56,8 +66,7 @@ function UserManagement() {
       user: currentUser,
     });
 
-    setUsername("");
-    setPassword("");
+    resetForm();
 
     alert("User Added Successfully");
   };
@@ -68,7 +77,7 @@ function UserManagement() {
       return;
     }
 
-    if (!window.confirm("Delete this user?")) return;
+    if (!confirmDialog("Delete this user?")) return;
 
     setUsers(users.filter((u) => u.username !== username));
 
@@ -102,9 +111,7 @@ function UserManagement() {
     addActivity({
       module: "USER MANAGEMENT",
       action: selectedUser?.enabled ? "DISABLE" : "ENABLE",
-      details: `${
-        selectedUser?.enabled ? "DISABLED" : "ENABLED"
-      } USER ${username}`,
+      details: `${selectedUser?.enabled ? "DISABLED" : "ENABLED"} USER ${username}`,
       user: currentUser,
     });
   };
@@ -147,11 +154,7 @@ function UserManagement() {
           placeholder="Username"
           value={username}
           onChange={(e) => {
-            const value = e.target.value
-              .toUpperCase()
-              .replace(/[^A-Z ]/g, "");
-
-            setUsername(value);
+            setUsername(normalizeUsername(e.target.value));
           }}
         />
 

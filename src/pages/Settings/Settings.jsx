@@ -2,6 +2,25 @@ import { useState, useRef } from "react";
 import { useStore } from "../../Context/StoreContext";
 import "./Settings.css";
 
+const initialClearOptions = {
+  inventory: false,
+  issues: false,
+  receives: false,
+  activity: false,
+  issueVouchers: false,
+  permanentVouchers: false,
+};
+
+const dateTimeFormatOptions = {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+};
+
 function Settings() {
   const {
     inventory,
@@ -22,8 +41,6 @@ function Settings() {
 
   const [message, setMessage] = useState("");
 
-  const [backupInfo, setBackupInfo] = useState(null);
-
   const [lastBackup, setLastBackup] = useState(
     localStorage.getItem("wsms_last_backup") || "Not Available"
   );
@@ -38,32 +55,27 @@ function Settings() {
 
   const [showClearDialog, setShowClearDialog] = useState(false);
 
-  const [clearOptions, setClearOptions] = useState({
-    inventory: false,
-    issues: false,
-    receives: false,
-    activity: false,
-    issueVouchers: false,
-    permanentVouchers: false,
-  });
+  const [clearOptions, setClearOptions] = useState(initialClearOptions);
 
   // ==========================================
   // BACKUP
   // ==========================================
 
+  const formatDateTime = () => new Date().toLocaleString("en-GB", dateTimeFormatOptions);
+
+  const updateLastBackup = (dateString) => {
+    localStorage.setItem("wsms_last_backup", dateString);
+    setLastBackup(dateString);
+  };
+
+  const updateLastRestore = (dateString) => {
+    localStorage.setItem("wsms_last_restore", dateString);
+    setLastRestore(dateString);
+  };
+
   const handleBackup = () => {
-
     const now = new Date();
-
-    const formattedDate = now.toLocaleString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    });
+    const formattedDate = formatDateTime();
 
     const backup = {
       application: "WSMS",
@@ -104,14 +116,7 @@ function Settings() {
 
     URL.revokeObjectURL(url);
 
-    localStorage.setItem(
-      "wsms_last_backup",
-      formattedDate
-    );
-
-    setLastBackup(formattedDate);
-
-    setBackupInfo(formattedDate);
+    updateLastBackup(formattedDate);
 
     setMessage("BACKUP CREATED SUCCESSFULLY.");
   };
@@ -198,18 +203,8 @@ function Settings() {
   // ==========================================
 
   const openClearDialog = () => {
-
-    setClearOptions({
-      inventory: false,
-      issues: false,
-      receives: false,
-      activity: false,
-      issueVouchers: false,
-      permanentVouchers: false,
-    });
-
+    setClearOptions(initialClearOptions);
     setShowClearDialog(true);
-
   };
 
   const toggleClearOption = (key) => {

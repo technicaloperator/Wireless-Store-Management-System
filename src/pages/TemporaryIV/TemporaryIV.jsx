@@ -135,6 +135,43 @@ function TemporaryIV() {
     return new Date(year, month - 1, day);
   };
 
+  // Helpers for activity and inventory updates
+  const logActivity = ({ module, action, details }) => {
+    addActivity({ module, action, details, user: currentUser });
+  };
+
+  const updateInventoryForReceived = (inventoryArr, numbers, itemName, companyName, voucher) =>
+    inventoryArr.map((row) => {
+      if (
+        numbers.includes(row.number) &&
+        row.item === itemName &&
+        row.company === companyName &&
+        row.status === "ISSUED"
+      ) {
+        return {
+          ...row,
+          status: "AVAILABLE",
+          history: [
+            ...(row.history || []),
+            {
+              date: new Date().toLocaleDateString(),
+              time: new Date().toLocaleTimeString(),
+              updatedAt: new Date().toISOString(),
+              action: "RECEIVED",
+              policeStation: voucher.policeStation,
+              voucher: voucher.voucherNumber,
+            },
+          ],
+        };
+      }
+      return row;
+    });
+
+  const formatReceivedDetails = (item) =>
+    item.isExtra
+      ? `RECEIVED EXTRA ${item.item} x${item.quantity || 1}`
+      : `RECEIVED ${item.item} ${item.company} ${item.gpwNumbers}`;
+
   const getMonthKey = (date) =>
     `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 
@@ -239,31 +276,13 @@ function TemporaryIV() {
 
     if (!item.isExtra) {
       const numbers = expandNumbers(item.gpwNumbers);
-      const updatedInventory = inventory.map((row) => {
-        if (
-          numbers.includes(row.number) &&
-          row.item === item.item &&
-          row.company === item.company &&
-          row.status === "ISSUED"
-        ) {
-          return {
-            ...row,
-            status: "AVAILABLE",
-            history: [
-              ...(row.history || []),
-              {
-                date: new Date().toLocaleDateString(),
-                time: new Date().toLocaleTimeString(),
-                updatedAt: new Date().toISOString(),
-                action: "RECEIVED",
-                policeStation: voucher.policeStation,
-                voucher: voucher.voucherNumber,
-              },
-            ],
-          };
-        }
-        return row;
-      });
+      const updatedInventory = updateInventoryForReceived(
+        inventory,
+        numbers,
+        item.item,
+        item.company,
+        voucher
+      );
 
       setInventory(updatedInventory);
     }
@@ -276,6 +295,9 @@ function TemporaryIV() {
         : `RECEIVED ${item.item} ${item.company} ${item.gpwNumbers}`,
     user: currentUser,
 });
+
+  // Use helper to log activity for clarity
+  logActivity({ module: "TEMPORARY IV", action: "RECEIVE", details: formatReceivedDetails(item) });
   };
 
   const generatePdf = (voucher) => {

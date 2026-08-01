@@ -1,8 +1,24 @@
+import { useMemo } from "react";
 import { useStore } from "../../Context/StoreContext";
 import "./ActivityLog.css";
 
 function ActivityLog() {
   const { activity = [] } = useStore();
+
+  const displayUser = (entry) => entry.user || entry.operator || "-";
+  const displayDetails = (entry) => entry.details || entry.activity || "-";
+
+  const rows = useMemo(() => {
+    return (activity || []).map((entry, index) => ({
+      key: entry.id || index,
+      date: entry.date,
+      time: entry.time,
+      user: displayUser(entry),
+      module: entry.module || "-",
+      action: entry.action || "-",
+      details: displayDetails(entry),
+    }));
+  }, [activity]);
 
   return (
     <div className="activity-page">
@@ -21,20 +37,15 @@ function ActivityLog() {
         </thead>
 
         <tbody>
-          {activity.length > 0 ? (
-            activity.map((entry, index) => (
-              <tr key={entry.id || index}>
-                <td>{entry.date}</td>
-
-                <td>{entry.time}</td>
-
-                <td>{entry.user || entry.operator || "-"}</td>
-
-                <td>{entry.module || "-"}</td>
-
-                <td>{entry.action || "-"}</td>
-
-                <td>{entry.details || entry.activity || "-"}</td>
+          {rows.length > 0 ? (
+            rows.map((r) => (
+              <tr key={r.key}>
+                <td>{r.date}</td>
+                <td>{r.time}</td>
+                <td>{r.user}</td>
+                <td>{r.module}</td>
+                <td>{r.action}</td>
+                <td>{r.details}</td>
               </tr>
             ))
           ) : (

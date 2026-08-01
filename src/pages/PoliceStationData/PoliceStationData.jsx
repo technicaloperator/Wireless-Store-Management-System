@@ -1,16 +1,70 @@
 import { useEffect, useMemo, useState } from "react";
 import { useStore } from "../../Context/StoreContext";
-import { items, commonExtras } from "../../data/masterData";
+import { commonExtras } from "../../data/masterData";
 import "./PoliceStationData.css";
+
+const formatLastUpdated = (value) => {
+  if (!value) return "—";
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return parsed.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+};
+
+const getLastUpdatedValue = (entry, voucher) =>
+  entry.updatedAt || voucher.generatedAt || voucher.issueDate;
+
+const hasMobileVehicle = (voucher) =>
+  !!voucher?.mobileVehicle?.trim();
+
+const expandNumbers = (text) => {
+  const list = [];
+
+  if (!text) return list;
+
+  text.toString().split(",").forEach((part) => {
+    part = part.trim();
+    if (!part) return;
+
+    if (part.includes("-")) {
+      const [from, to] = part.split("-").map(Number);
+      for (let i = from; i <= to; i++) list.push(String(i));
+    } else {
+      list.push(part);
+    }
+  });
+
+  return list;
+};
+
+const buildStationRow = ({ id, name, company, gpw, ivNo, lastUpdated }) => ({
+  id,
+  name,
+  company: company || "—",
+  gpw,
+  ivNo,
+  lastUpdated: formatLastUpdated(lastUpdated),
+});
 
 function PoliceStationData() {
   const {
     inventory = [],
-    issueVouchers = [],
     permanentVouchers = [],
   } = useStore();
 
   const [highlightedStation, setHighlightedStation] = useState(null);
+  const [selectedStation, setSelectedStation] = useState("");
 
   // Handle search navigation highlighting
   useEffect(() => {
@@ -24,57 +78,46 @@ function PoliceStationData() {
     }
   }, []);
 
-  const formatLastUpdated = (value) => {
-    if (!value) return "—";
-
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) {
-      return value;
-    }
-
-    return parsed.toLocaleString("en-IN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: true,
-    });
-  };
-
-  const expandNumbers = (text) => {
-    const list = [];
-
-    if (!text) return list;
-
-    text.toString().split(",").forEach((part) => {
-      part = part.trim();
-      if (!part) return;
-
-      if (part.includes("-")) {
-        const [from, to] = part.split("-").map(Number);
-        for (let i = from; i <= to; i++) list.push(String(i));
-      } else {
-        list.push(part);
-      }
-    });
-
-    return list;
-  };
-
-  const [selectedStation, setSelectedStation] = useState("");
-
   const stationList = useMemo(() => {
     const stations = new Set();
 
-    // Only consider Permanent IV vouchers for police-station data
+    const addStation = (station) => {
+      if (station) stations.add(station);
+    };
+
+    inventory.forEach((row) => {
+      if (row.status !== "ISSUED") return;
+
+      const issuedHistory = (row.history || []).filter(
+        (entry) => entry.action === "ISSUED"
+      );
+      const latestIssue = issuedHistory[issuedHistory.length - 1];
+      if (!latestIssue) return;
+
+      const voucher = permanentVouchers.find(
+        (v) => v.voucherNumber === latestIssue.voucher
+      );
+      if (!voucher || hasMobileVehicle(voucher)) return;
+
+      addStation(latestIssue.policeStation);
+    });
+
     permanentVouchers.forEach((voucher) => {
-      if (voucher.policeStation) stations.add(voucher.policeStation);
+      if (hasMobileVehicle(voucher) || !voucher.policeStation) return;
+
+      const hasActiveItems = (voucher.items || []).some((entry) => {
+        if (entry.received) return false;
+        const isCommonExtra = commonExtras.includes(entry.item);
+        return entry.isExtra || isCommonExtra;
+      });
+
+      if (hasActiveItems) {
+        addStation(voucher.policeStation);
+      }
     });
 
     return [...stations];
-  }, [permanentVouchers]);
+  }, [inventory, permanentVouchers]);
 
   useEffect(() => {
     if (!stationList.length) {
@@ -93,10 +136,6 @@ function PoliceStationData() {
     const rows = [];
 
     // Build a set of permanent voucher numbers for quick lookup
-    const permanentVoucherSet = new Set(
-      (permanentVouchers || []).map((v) => v.voucherNumber)
-    );
-
     const seenIds = new Set();
 
     inventory.forEach((row) => {
@@ -106,43 +145,35 @@ function PoliceStationData() {
         (entry) => entry.action === "ISSUED"
       );
       const latestIssue = issuedHistory[issuedHistory.length - 1];
-      if (
-  !latestIssue ||
-  latestIssue.policeStation !== selectedStation
-) {
-  return;
-}
+      if (!latestIssue || latestIssue.policeStation !== selectedStation) {
+        return;
+      }
 
-// Skip inventory issued to mobile vehicles
-const voucher = permanentVouchers.find(
-  (v) => v.voucherNumber === latestIssue.voucher
-);
+      // Skip inventory issued to mobile vehicles
+      const voucher = permanentVouchers.find(
+        (v) => v.voucherNumber === latestIssue.voucher
+      );
+      if (!voucher || hasMobileVehicle(voucher)) {
+        return;
+      }
 
-if (voucher?.mobileVehicle?.trim()) {
-  return;
-}
-
-      const itemMeta = items.find((entry) => entry.name === row.item);
-
-        const id = `${row.item}-${row.company}-${row.number}`;
-        rows.push({
-          id: `${row.item}-${row.company}-${row.number}`,
+      const id = `${row.item}-${row.company}-${row.number}`;
+      rows.push(
+        buildStationRow({
+          id,
           name: row.item,
-          company: row.company || "—",
+          company: row.company,
           gpw: row.number,
           ivNo: latestIssue?.voucher || "—",
-          lastUpdated: formatLastUpdated(
-            latestIssue.updatedAt || latestIssue.time || latestIssue.date
-          ),
-        });
+          lastUpdated: latestIssue.updatedAt || latestIssue.time || latestIssue.date,
+        })
+      );
       seenIds.add(id);
     });
     // Only include items from Permanent IV vouchers. Also include commonExtras items
     permanentVouchers.forEach((voucher) => {
       if (voucher.policeStation !== selectedStation) return;
-
-// Skip vouchers issued to mobile vehicles
-if (voucher.mobileVehicle && voucher.mobileVehicle.trim() !== "") return;
+      if (hasMobileVehicle(voucher)) return;
 
       (voucher.items || []).forEach((entry, index) => {
         if (entry.received) return;
@@ -154,36 +185,34 @@ if (voucher.mobileVehicle && voucher.mobileVehicle.trim() !== "") return;
           const vid = `${voucher.voucherNumber}-extra-${index}`;
           if (seenIds.has(vid)) return;
 
-          rows.push({
-            id: vid,
-            name: entry.item,
-            company: entry.company || "—",
-            gpw: entry.quantity || 1,
-            ivNo: voucher.voucherNumber || "—",
-            lastUpdated: formatLastUpdated(
-              entry.updatedAt || voucher.generatedAt || voucher.issueDate
-            ),
-          });
+          rows.push(
+            buildStationRow({
+              id: vid,
+              name: entry.item,
+              company: entry.company,
+              gpw: entry.quantity || 1,
+              ivNo: voucher.voucherNumber || "—",
+              lastUpdated: getLastUpdatedValue(entry, voucher),
+            })
+          );
 
           seenIds.add(vid);
         } else {
-          // expand gpw/serial numbers and add per-number if not already present
           const numbers = expandNumbers(entry.gpwNumbers || "");
           if (numbers.length === 0) {
-            // fallback to adding a single row when no explicit numbers available
             const vid = `${voucher.voucherNumber}-${index}`;
             if (seenIds.has(vid)) return;
 
-            rows.push({
-              id: vid,
-              name: entry.item,
-              company: entry.company || "—",
-              gpw: entry.gpwNumbers || "—",
-              ivNo: voucher.voucherNumber || "—",
-              lastUpdated: formatLastUpdated(
-                entry.updatedAt || voucher.generatedAt || voucher.issueDate
-              ),
-            });
+            rows.push(
+              buildStationRow({
+                id: vid,
+                name: entry.item,
+                company: entry.company,
+                gpw: entry.gpwNumbers || "—",
+                ivNo: voucher.voucherNumber || "—",
+                lastUpdated: getLastUpdatedValue(entry, voucher),
+              })
+            );
 
             seenIds.add(vid);
           } else {
@@ -191,16 +220,16 @@ if (voucher.mobileVehicle && voucher.mobileVehicle.trim() !== "") return;
               const id = `${entry.item}-${entry.company}-${num}`;
               if (seenIds.has(id)) return;
 
-              rows.push({
-                id,
-                name: entry.item,
-                company: entry.company || "—",
-                gpw: num,
-                ivNo: voucher.voucherNumber || "—",
-                lastUpdated: formatLastUpdated(
-                  entry.updatedAt || voucher.generatedAt || voucher.issueDate
-                ),
-              });
+              rows.push(
+                buildStationRow({
+                  id,
+                  name: entry.item,
+                  company: entry.company,
+                  gpw: num,
+                  ivNo: voucher.voucherNumber || "—",
+                  lastUpdated: getLastUpdatedValue(entry, voucher),
+                })
+              );
 
               seenIds.add(id);
             });
@@ -210,7 +239,7 @@ if (voucher.mobileVehicle && voucher.mobileVehicle.trim() !== "") return;
     });
 
     return rows.sort((a, b) => a.name.localeCompare(b.name));
-  }, [selectedStation, inventory, issueVouchers, permanentVouchers]);
+  }, [selectedStation, inventory, permanentVouchers]);
 
   return (
     <div className="police-station-data-page">

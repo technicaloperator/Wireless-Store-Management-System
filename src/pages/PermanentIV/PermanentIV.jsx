@@ -81,6 +81,43 @@ function PermanentIV() {
     return ranges;
   };
 
+  // Helpers for activity and inventory updates
+  const logActivity = ({ module, action, details }) => {
+    addActivity({ module, action, details, user: currentUser });
+  };
+
+  const updateInventoryForReceived = (inventoryArr, numbers, itemName, companyName, voucher) =>
+    inventoryArr.map((row) => {
+      if (
+        numbers.includes(row.number) &&
+        row.item === itemName &&
+        row.company === companyName &&
+        row.status === "ISSUED"
+      ) {
+        return {
+          ...row,
+          status: "AVAILABLE",
+          history: [
+            ...(row.history || []),
+            {
+              date: new Date().toLocaleDateString(),
+              time: new Date().toLocaleTimeString(),
+              updatedAt: new Date().toISOString(),
+              action: "RECEIVED",
+              policeStation: voucher.policeStation,
+              voucher: voucher.voucherNumber,
+            },
+          ],
+        };
+      }
+      return row;
+    });
+
+  const formatReceivedDetails = (item) =>
+    item.isExtra
+      ? `RECEIVED EXTRA ${item.item} x${item.quantity || 1}`
+      : `RECEIVED ${item.item} ${item.company} ${item.gpwNumbers}`;
+
   const formatVoucherItemLabel = (item) => {
     if (item.isExtra) {
       return `${item.item} x${item.quantity || 1}`;
@@ -127,41 +164,17 @@ function PermanentIV() {
 
     if (!item.isExtra) {
       const numbers = expandNumbers(item.gpwNumbers);
-      const updatedInventory = inventory.map((row) => {
-        if (
-          numbers.includes(row.number) &&
-          row.item === item.item &&
-          row.company === item.company &&
-          row.status === "ISSUED"
-        ) {
-          return {
-            ...row,
-            status: "AVAILABLE",
-            history: [
-              ...(row.history || []),
-              {
-                date: new Date().toLocaleDateString(),
-                time: new Date().toLocaleTimeString(),
-                updatedAt: new Date().toISOString(),
-                action: "RECEIVED",
-                policeStation: voucher.policeStation,
-                voucher: voucher.voucherNumber,
-              },
-            ],
-          };
-        }
-        return row;
-      });
+      const updatedInventory = updateInventoryForReceived(
+        inventory,
+        numbers,
+        item.item,
+        item.company,
+        voucher
+      );
       setInventory(updatedInventory);
 
-      addActivity({
-        module: "PERMANENT IV",
-        action: "RECEIVE",
-        details: item.isExtra
-          ? `RECEIVED EXTRA ${item.item} x${item.quantity || 1}`
-          : `RECEIVED ${item.item} ${item.company} ${item.gpwNumbers}`,
-        user: currentUser,
-      });
+      // Log activity via helper
+      logActivity({ module: "PERMANENT IV", action: "RECEIVE", details: formatReceivedDetails(item) });
     }
   };
 
@@ -188,12 +201,7 @@ function PermanentIV() {
 
     setPermanentVouchers(updated);
 
-    addActivity({
-      module: "PERMANENT IV",
-      action: "DELETE",
-      details: `DELETED VOUCHER ${voucherToDelete.voucherNumber}`,
-      user: currentUser,
-    });
+    logActivity({ module: "PERMANENT IV", action: "DELETE", details: `DELETED VOUCHER ${voucherToDelete.voucherNumber}` });
 
     if (selectedVoucher?.voucherNumber === voucherToDelete.voucherNumber) {
       setSelectedVoucher(null);
@@ -218,12 +226,7 @@ function PermanentIV() {
 
     setPermanentVouchers(updatedVouchers);
 
-    addActivity({
-      module: "PERMANENT IV",
-      action: "REMARKS",
-      details: `UPDATED REMARKS FOR ${voucherForRemarks.voucherNumber}`,
-      user: currentUser,
-    });
+    logActivity({ module: "PERMANENT IV", action: "REMARKS", details: `UPDATED REMARKS FOR ${voucherForRemarks.voucherNumber}` });
 
     setVoucherForRemarks(null);
     setRemarksText("");
