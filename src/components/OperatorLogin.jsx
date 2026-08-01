@@ -14,15 +14,13 @@ const {
   const [password, setPassword] = useState("");
 
   const handleLogin = () => {
-    console.log("Users:", users);
-console.log("Username entered:", username);
-console.log("Password entered:", password);
+    
 
     const user = users.find(
       (u) =>
         u.username === username
     );
-    console.log("Found user:", user);
+    
 
     if (!user) {
       alert("Invalid Username");
@@ -117,11 +115,11 @@ console.log("Password entered:", password);
       </button>
 
       <div className="login-footer">
-  <strong>Version 1.0</strong>
+  <strong>Version 1.4</strong>
   <br />
-  Wireless Department - Morbi
+  Developed by - Nirav N. Loriya
   <br />
-  Gujarat Police
+  Technical Operator - Morbi
 </div>
 
     </div>
