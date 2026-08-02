@@ -5,6 +5,51 @@ import BulkAddModal from "./components/BulkAddModal";
 import { useStore } from "../../Context/StoreContext";
 import { items } from "../../data/masterData";
 
+const STATUS_ORDER = {
+  AVAILABLE: 1,
+  ISSUED: 2,
+  FAULTY: 3,
+  UNSERVICEABLE: 4,
+};
+
+const createInventoryItem = (itemName, companyName, numberValue, itemInfo, id = Date.now()) => ({
+  id,
+  item: itemName,
+  company: companyName,
+  number: numberValue,
+  numberType: itemInfo.numberType,
+  status: "AVAILABLE",
+  location: "WIRELESS STORE",
+  faultReason: "",
+  repairStatus: "",
+  faultyDate: "",
+  repairSentDate: "",
+  repairedDate: "",
+  UNSERVICEABLEDate: "",
+  history: [
+    {
+      action: "ITEM ADDED",
+      date: new Date().toLocaleDateString(),
+    },
+  ],
+});
+
+const isDuplicateInventoryItem = (inventory, itemName, companyName, numberValue) =>
+  inventory.some(
+    (item) =>
+      item.item.toLowerCase() === itemName.toLowerCase() &&
+      item.company.toLowerCase() === companyName.toLowerCase() &&
+      item.number.toString().trim() === numberValue.toString().trim()
+  );
+
+const resetNewItemForm = (setNewItem, defaultItemName) => {
+  setNewItem({
+    item: defaultItemName,
+    company: "",
+    number: "",
+  });
+};
+
 function Inventory() {
  const {
   inventory,
@@ -102,37 +147,30 @@ function Inventory() {
 
   const companies = currentItem?.companies || [];
 
-  const statusOrder = {
-  AVAILABLE: 1,
-  ISSUED: 2,
-  FAULTY: 3,
-  UNSERVICEABLE: 4, // or UNSERVICEABLE if you're still using that
-};
+  const filteredInventory = useMemo(() => {
+    return inventory
+      .filter((x) => {
+        const searchValue = search.toUpperCase();
+        const companyMatch = !selectedCompany || x.company === selectedCompany;
+        const statusMatch = selectedStatus === "ALL" || x.status === selectedStatus;
 
-const filteredInventory = inventory
-  .filter((x) => {
-    const searchValue = search.toUpperCase();
-    const companyMatch =
-      !selectedCompany || x.company === selectedCompany;
-    const statusMatch =
-      selectedStatus === "ALL" || x.status === selectedStatus;
+        return (
+          x.item === selectedItem &&
+          companyMatch &&
+          statusMatch &&
+          x.number.toString().includes(searchValue)
+        );
+      })
+      .sort((a, b) => {
+        const statusDiff =
+          (STATUS_ORDER[a.status] || 99) -
+          (STATUS_ORDER[b.status] || 99);
 
-    return (
-      x.item === selectedItem &&
-      companyMatch &&
-      statusMatch &&
-      x.number.toString().includes(searchValue)
-    );
-  })
-  .sort((a, b) => {
-    const statusDiff =
-      (statusOrder[a.status] || 99) -
-      (statusOrder[b.status] || 99);
+        if (statusDiff !== 0) return statusDiff;
 
-    if (statusDiff !== 0) return statusDiff;
-
-    return Number(a.number) - Number(b.number);
-  });
+        return Number(a.number) - Number(b.number);
+      });
+  }, [inventory, search, selectedItem, selectedCompany, selectedStatus]);
 
   const getCount = (item, company, status) => {
     return inventory.filter(
@@ -154,17 +192,37 @@ const filteredInventory = inventory
   };
 
   const toggleItem = (item) => {
-    setOpenItems({
-      ...openItems,
-      [item]: !openItems[item],
-    });
+    setOpenItems((prev) => ({
+      ...prev,
+      [item]: !prev[item],
+    }));
   };
 
   const toggleCompany = (company) => {
-    setOpenCompanies({
-      ...openCompanies,
-      [company]: !openCompanies[company],
-    });
+    setOpenCompanies((prev) => ({
+      ...prev,
+      [company]: !prev[company],
+    }));
+  };
+
+  const handleToggleItem = (item) => {
+    toggleItem(item);
+    openFolder(item);
+  };
+
+  const handleToggleCompany = (item, company) => {
+    toggleCompany(item + company);
+    openFolder(item, company, "ALL");
+  };
+
+  const handleOpenAddModal = () => {
+    resetNewItemForm(setNewItem, items[0].name);
+    setShowAdd(true);
+  };
+
+  const handleOpenBulkModal = () => {
+    resetNewItemForm(setNewItem, items[0].name);
+    setShowBulk(true);
   };
 
   const openFolder = (
@@ -259,58 +317,36 @@ const updateStatus = (
 };
   const addSingleItem = () => {
     if (!newItem.company || !newItem.number) return;
-    // Check duplicate Item + Company + Number
-const duplicate = inventory.some(
-  (item) =>
-    item.item.toLowerCase() === newItem.item.toLowerCase() &&
-    item.company.toLowerCase() === newItem.company.toLowerCase() &&
-    item.number.toString().trim() === newItem.number.toString().trim()
-);
 
-if (duplicate) {
-  alert(
-    `${newItem.item}\n${newItem.company}\n\nNumber ${newItem.number} already exists.`
-  );
-  return;
-}
-
-    const itemInfo = items.find(
-      (x) => x.name === newItem.item
+    const duplicate = isDuplicateInventoryItem(
+      inventory,
+      newItem.item,
+      newItem.company,
+      newItem.number
     );
 
-    const obj = {
-  id: Date.now(),
-  item: newItem.item,
-  company: newItem.company,
-  number: newItem.number,
-  numberType: itemInfo.numberType,
+    if (duplicate) {
+      alert(
+        `${newItem.item}\n${newItem.company}\n\nNumber ${newItem.number} already exists.`
+      );
+      return;
+    }
 
-  status: "AVAILABLE",
-  location: "WIRELESS STORE",
-
-  // Faulty Stock
-  faultReason: "",
-  repairStatus: "",
-  faultyDate: "",
-  repairSentDate: "",
-  repairedDate: "",
-  UNSERVICEABLEDate: "",
-
-  history: [
-    {
-      action: "ITEM ADDED",
-      date: new Date().toLocaleDateString(),
-    },
-  ],
-};
+    const itemInfo = items.find((x) => x.name === newItem.item);
+    const obj = createInventoryItem(
+      newItem.item,
+      newItem.company,
+      newItem.number,
+      itemInfo
+    );
 
     setInventory([...inventory, obj]);
-addActivity({
-  module: "INVENTORY",
-  action: "ADD",
-  details: `ADDED ${newItem.item} ${newItem.company} ${newItem.number}`,
-  user: currentUser,
-});
+    addActivity({
+      module: "INVENTORY",
+      action: "ADD",
+      details: `ADDED ${newItem.item} ${newItem.company} ${newItem.number}`,
+      user: currentUser,
+    });
 
     setShowAdd(false);
 
@@ -323,70 +359,46 @@ addActivity({
 
   const bulkAdd = (from, to) => {
     if (from > to) return;
-    // Check for duplicate numbers before adding
-for (let i = Number(from); i <= Number(to); i++) {
-  const duplicate = inventory.some(
-    (item) =>
-      item.item.toLowerCase() === newItem.item.toLowerCase() &&
-      item.company.toLowerCase() === newItem.company.toLowerCase() &&
-      item.number.toString().trim() === i.toString()
-  );
 
-  if (duplicate) {
-    alert(
-      `${newItem.item}\n${newItem.company}\n\nNumber ${i} already exists.\n\nBulk Add Cancelled.`
-    );
-    return;
-  }
-}
+    for (let i = Number(from); i <= Number(to); i++) {
+      const duplicate = isDuplicateInventoryItem(
+        inventory,
+        newItem.item,
+        newItem.company,
+        i
+      );
 
-    const itemInfo = items.find(
-      (x) => x.name === newItem.item
-    );
+      if (duplicate) {
+        alert(
+          `${newItem.item}\n${newItem.company}\n\nNumber ${i} already exists.\n\nBulk Add Cancelled.`
+        );
+        return;
+      }
+    }
 
+    const itemInfo = items.find((x) => x.name === newItem.item);
     let arr = [...inventory];
 
     for (let i = Number(from); i <= Number(to); i++) {
-      arr.push({
-  id: Date.now() + i,
-
-  item: newItem.item,
-
-  company: newItem.company,
-
-  number: i.toString(),
-
-  numberType: itemInfo.numberType,
-
-  status: "AVAILABLE",
-
-  location: "WIRELESS STORE",
-
-  // Faulty Stock
-  faultReason: "",
-  repairStatus: "",
-  faultyDate: "",
-  repairSentDate: "",
-  repairedDate: "",
-  UNSERVICEABLEDate: "",
-
-  history: [
-    {
-      action: "ITEM ADDED",
-      date: new Date().toLocaleDateString(),
-    },
-  ],
-});
+      arr.push(
+        createInventoryItem(
+          newItem.item,
+          newItem.company,
+          i.toString(),
+          itemInfo,
+          Date.now() + i
+        )
+      );
     }
 
     setInventory(arr);
-    
-addActivity({
-  module: "INVENTORY",
-  action: "BULK ADD",
-  details: `ADDED ${to - from + 1} ${newItem.item} ITEMS (${from}-${to})`,
-  user: currentUser,
-});
+
+    addActivity({
+      module: "INVENTORY",
+      action: "BULK ADD",
+      details: `ADDED ${to - from + 1} ${newItem.item} ITEMS (${from}-${to})`,
+      user: currentUser,
+    });
 
     setShowBulk(false);
   };
@@ -438,10 +450,7 @@ addActivity({
 
             <div
               className="tree-title"
-              onClick={() => {
-                toggleItem(item.name);
-                openFolder(item.name);
-              }}
+              onClick={() => handleToggleItem(item.name)}
             >
               {openItems[item.name] ? "▼" : "▶"}{" "}
               {item.name}
@@ -460,15 +469,7 @@ addActivity({
 
                   <div
   className="company-title"
-  onClick={() => {
-    toggleCompany(item.name + company);
-
-    openFolder(
-      item.name,
-      company,
-      "ALL"
-    );
-  }}
+  onClick={() => handleToggleCompany(item.name, company)}
 >
                     {openCompanies[item.name + company]
                       ? "▼"
@@ -568,30 +569,14 @@ addActivity({
 
             <button
   className="add-btn"
-  onClick={() => {
-    setNewItem({
-      item: items[0].name,
-      company: "",
-      number: "",
-    });
-
-    setShowAdd(true);
-  }}
+  onClick={handleOpenAddModal}
 >
   + ADD ITEM
 </button>
 
             <button
   className="bulk-btn"
-  onClick={() => {
-    setNewItem({
-      item: items[0].name,
-      company: "",
-      number: "",
-    });
-
-    setShowBulk(true);
-  }}
+  onClick={handleOpenBulkModal}
 >
               + BULK ADD
             </button>
