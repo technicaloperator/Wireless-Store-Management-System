@@ -1,4 +1,9 @@
-// Placeholder for SQLite connection setup using better-sqlite3.
-// This file will be implemented in a later migration step.
+import Database from "better-sqlite3";
+import config from "../config/index.js";
+import { initializeSchema } from "./schema.js";
 
-export default null;
+const db = new Database(config.databasePath);
+
+initializeSchema(db);
+
+export default db;
