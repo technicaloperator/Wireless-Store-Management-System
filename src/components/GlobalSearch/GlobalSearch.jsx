@@ -1,7 +1,38 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import "./GlobalSearch.css";
 import { performGlobalSearch } from "../../utils/searchEngine";
 import { useStore } from "../../Context/StoreContext";
+
+const MODULE_ORDER = [
+  "INVENTORY",
+  "FAULTY STOCK",
+  "TEMPORARY IV",
+  "PERMANENT IV",
+  "POLICE STATION DATA",
+  "MOBILE VEHICLE DATA",
+  "USER MANAGEMENT",
+];
+
+const groupResultsByModule = (results) => {
+  const groupedResults = {};
+
+  results.forEach((result) => {
+    if (!groupedResults[result.module]) {
+      groupedResults[result.module] = [];
+    }
+    groupedResults[result.module].push(result);
+  });
+
+  return MODULE_ORDER.reduce((orderedModules, module) => {
+    if (groupedResults[module]) {
+      orderedModules.push({
+        module,
+        results: groupedResults[module],
+      });
+    }
+    return orderedModules;
+  }, []);
+};
 
 function GlobalSearch({
   isOpen,
@@ -80,43 +111,20 @@ function GlobalSearch({
     onClose();
   };
 
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
   const handleSelectResult = (result) => {
     onNavigate(result);
     handleClose();
   };
 
+  const orderedModules = useMemo(() => groupResultsByModule(results), [results]);
+
   if (!isOpen) return null;
 
-  // Group results by module
-  const groupedResults = {};
-  results.forEach((result) => {
-    if (!groupedResults[result.module]) {
-      groupedResults[result.module] = [];
-    }
-    groupedResults[result.module].push(result);
-  });
-
-  const moduleOrder = [
-  "INVENTORY",
-  "FAULTY STOCK",
-  "TEMPORARY IV",
-  "PERMANENT IV",
-  "POLICE STATION DATA",
-  "MOBILE VEHICLE DATA",
-  "USER MANAGEMENT",
-];
-
   let resultIndex = 0;
-  const orderedModules = [];
-  
-  moduleOrder.forEach((module) => {
-    if (groupedResults[module]) {
-      orderedModules.push({
-        module,
-        results: groupedResults[module],
-      });
-    }
-  });
 
   return (
     <div className="global-search-overlay" onClick={handleClose}>
@@ -128,7 +136,7 @@ function GlobalSearch({
             className="search-input"
             placeholder="Search GPW No., Serial No., IV No., Vehicle No., Police Station, Item Name..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
             autoComplete="off"
           />
           <button className="close-btn" onClick={handleClose}>

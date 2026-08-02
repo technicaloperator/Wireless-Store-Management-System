@@ -3,6 +3,16 @@ import { useStore } from "../Context/StoreContext";
 import logo from "../assets/logo.png";
 import "./OperatorLogin.css";
 
+const normalizeUsername = (value) =>
+  value.toUpperCase().replace(/[^A-Z ]/g, "");
+
+const getLoginError = (user, password) => {
+  if (!user) return "Invalid Username";
+  if (!user.enabled) return "This user is disabled.";
+  if (user.password !== password) return "Wrong Password";
+  return null;
+};
+
 function OperatorLogin({ setOperator }) {
 const {
   users,
@@ -13,45 +23,40 @@ const {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  const handleUsernameChange = (event) => {
+    setUsername(normalizeUsername(event.target.value));
+  };
+
+  const handlePasswordChange = (event) => {
+    setPassword(event.target.value);
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      handleLogin();
+    }
+  };
+
   const handleLogin = () => {
-    
+    const user = users.find((u) => u.username === username);
+    const loginError = getLoginError(user, password);
 
-    const user = users.find(
-      (u) =>
-        u.username === username
-    );
-    
-
-    if (!user) {
-      alert("Invalid Username");
+    if (loginError) {
+      alert(loginError);
       return;
     }
 
-    if (!user.enabled) {
-      alert("This user is disabled.");
-      return;
-    }
-
-    if (user.password !== password) {
-      alert("Wrong Password");
-      return;
-    }
-
-    localStorage.setItem(
-      "wsms_operator",
-      user.username
-    );
+    localStorage.setItem("wsms_operator", user.username);
 
     setOperator(user.username);
-
     setCurrentUser(user.username);
 
     addActivity({
-  module: "LOGIN",
-  action: "LOGIN",
-  details: "USER LOGGED INTO WSMS",
-  user: user.username,
-});
+      module: "LOGIN",
+      action: "LOGIN",
+      details: "USER LOGGED INTO WSMS",
+      user: user.username,
+    });
   };
   return (
   <div className="login-page">
@@ -77,18 +82,8 @@ const {
         type="text"
         placeholder="Username"
         value={username}
-        onChange={(e) =>
-          setUsername(
-            e.target.value
-              .toUpperCase()
-              .replace(/[^A-Z ]/g, "")
-          )
-        }
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            handleLogin();
-          }
-        }}
+        onChange={handleUsernameChange}
+        onKeyDown={handleKeyDown}
         className="login-input"
       />
 
@@ -96,14 +91,8 @@ const {
         type="password"
         placeholder="Password"
         value={password}
-        onChange={(e) =>
-          setPassword(e.target.value)
-        }
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            handleLogin();
-          }
-        }}
+        onChange={handlePasswordChange}
+        onKeyDown={handleKeyDown}
         className="login-input"
       />
 

@@ -55,18 +55,70 @@ function Issue() {
     return items.find((x) => x.name === item);
   }, [item]);
 
-  const availableItems = inventory.filter(
-    (x) =>
-      x.item === item &&
-      x.company === company &&
-      x.status === "AVAILABLE"
-  );
+  const availableItems = useMemo(() => {
+    return inventory.filter(
+      (x) =>
+        x.item === item &&
+        x.company === company &&
+        x.status === "AVAILABLE"
+    );
+  }, [inventory, item, company]);
 
   const formatDateForInput = (value) => {
     if (!value) return "";
     const [day, month, year] = value.split("-");
     if (!day || !month || !year) return "";
     return `${year}-${month}-${day}`;
+  };
+
+  const handleItemChange = (event) => {
+    setItem(event.target.value);
+    setCompany("");
+    setIsExtraItem(false);
+  };
+
+  const handleCompanyChange = (event) => {
+    setCompany(event.target.value);
+  };
+
+  const handleGpwNumbersChange = (event) => {
+    setGpwNumbers(event.target.value);
+  };
+
+  const handleExtraItemNameChange = (event) => {
+    setExtraItemName(event.target.value);
+  };
+
+  const handleExtraQuantityChange = (event) => {
+    setExtraQuantity(event.target.value);
+  };
+
+  const handleIssueDateChange = (event) => {
+    setIssueDate(formatDateForDisplay(event.target.value));
+  };
+
+  const handleDesignationChange = (event) => {
+    setDesignation(event.target.value);
+  };
+
+  const handlePoliceStationChange = (event) => {
+    setPoliceStation(event.target.value);
+  };
+
+  const handleDistrictChange = (event) => {
+    setDistrict(event.target.value);
+  };
+
+  const handleMobileVehicleChange = (event) => {
+    setMobileVehicle(event.target.value.toUpperCase());
+  };
+
+  const handleIndentNoChange = (event) => {
+    setIndentNo(event.target.value);
+  };
+
+  const handleIndentDateChange = (event) => {
+    setIndentDate(formatDateForDisplay(event.target.value));
   };
 
   const formatDateForDisplay = (value) => {
@@ -482,11 +534,7 @@ addActivity({
 
             <select
               value={item}
-              onChange={(e) => {
-                setItem(e.target.value);
-                setCompany("");
-                setIsExtraItem(false);
-              }}
+              onChange={handleItemChange}
               disabled={isExtraItem}
             >
               {items.map((x) => (
@@ -502,7 +550,7 @@ addActivity({
 
             <select
               value={company}
-              onChange={(e) => setCompany(e.target.value)}
+              onChange={handleCompanyChange}
               disabled={isExtraItem}
             >
               <option value="">SELECT COMPANY</option>
@@ -530,9 +578,7 @@ addActivity({
                   : "25,26,27 OR 25-30"
               }
               value={gpwNumbers}
-              onChange={(e) =>
-                setGpwNumbers(e.target.value)
-              }
+              onChange={handleGpwNumbersChange}
               disabled={isExtraItem}
             />
           </div>
@@ -556,9 +602,7 @@ addActivity({
               type="text"
               list="extra-item-list"
               value={extraItemName}
-              onChange={(e) => {
-                setExtraItemName(e.target.value);
-              }}
+              onChange={handleExtraItemNameChange}
               placeholder="SELECT OR TYPE EXTRA ITEM"
             />
             <datalist id="extra-item-list">
@@ -574,9 +618,7 @@ addActivity({
               type="number"
               min="1"
               value={extraQuantity}
-              onChange={(e) => {
-                setExtraQuantity(e.target.value);
-              }}
+              onChange={handleExtraQuantityChange}
               placeholder="ENTER QUANTITY"
             />
           </div>
@@ -597,7 +639,7 @@ addActivity({
           <input
             type="date"
             value={formatDateForInput(issueDate)}
-            onChange={(e) => setIssueDate(formatDateForDisplay(e.target.value))}
+            onChange={handleIssueDateChange}
           />
         </div>
 
@@ -607,7 +649,7 @@ addActivity({
           <input
             list="designation-list"
             value={designation}
-            onChange={(e) => setDesignation(e.target.value)}
+            onChange={handleDesignationChange}
             placeholder="SELECT OR TYPE DESIGNATION"
           />
 
@@ -624,7 +666,7 @@ addActivity({
           <input
             list="police-station-list"
             value={policeStation}
-            onChange={(e) => setPoliceStation(e.target.value)}
+            onChange={handlePoliceStationChange}
             placeholder="SELECT OR TYPE POLICE STATION"
           />
 
@@ -641,7 +683,7 @@ addActivity({
           <input
             list="district-list"
             value={district}
-            onChange={(e) => setDistrict(e.target.value)}
+            onChange={handleDistrictChange}
             placeholder="OPTIONAL"
           />
 
@@ -657,7 +699,7 @@ addActivity({
           <input
             type="text"
             value={mobileVehicle}
-            onChange={(e) => setMobileVehicle(e.target.value.toUpperCase())}
+            onChange={handleMobileVehicleChange}
             placeholder="OPTIONAL"
           />
         </div>
@@ -667,7 +709,7 @@ addActivity({
           <input
             type="text"
             value={indentNo}
-            onChange={(e) => setIndentNo(e.target.value)}
+            onChange={handleIndentNoChange}
             placeholder="OPTIONAL"
           />
         </div>
@@ -677,7 +719,7 @@ addActivity({
           <input
             type="date"
             value={formatDateForInput(indentDate)}
-            onChange={(e) => setIndentDate(formatDateForDisplay(e.target.value))}
+            onChange={handleIndentDateChange}
           />
         </div>
 

@@ -1,5 +1,18 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
+const STORAGE_KEYS = {
+  inventory: "wsms_inventory",
+  issues: "wsms_issues",
+  faultyStock: "wsms_faultyStock",
+  unserviceableStock: "wsms_UNSERVICEABLEStock",
+  receives: "wsms_receives",
+  activity: "wsms_activity",
+  issueVouchers: "wsms_issueVouchers",
+  permanentVouchers: "wsms_permanentVouchers",
+  users: "wsms_users",
+  currentUser: "wsms_currentUser",
+};
+
 const defaultUsers = [
   {
     username: "ADMIN",
@@ -9,66 +22,74 @@ const defaultUsers = [
 ];
 const StoreContext = createContext();
 
-export function StoreProvider({ children }) {
-  // ---------------- INVENTORY ----------------
-  const [inventory, setInventory] = useState(() => {
-    const saved = localStorage.getItem("wsms_inventory");
-    return saved ? JSON.parse(saved) : [];
-  });
+const readStoredValue = (key, fallback) => {
+  const saved = localStorage.getItem(key);
+  return saved ? JSON.parse(saved) : fallback;
+};
 
-  // ---------------- ISSUES ----------------
-  const [issues, setIssues] = useState(() => {
-    const saved = localStorage.getItem("wsms_issues");
-    return saved ? JSON.parse(saved) : [];
-  });
-// ---------------- FAULTY STOCK ----------------
-const [faultyItems, setFaultyItems] = useState(() => {
-  const saved = localStorage.getItem("wsms_faultyStock");
-  return saved ? JSON.parse(saved) : [];
-});
+const readStoredJson = (key, fallback) => {
+  const saved = localStorage.getItem(key);
 
-// ---------------- UNSERVICEABLE STOCK ----------------
-const [UNSERVICEABLEItems, setUNSERVICEABLEItems] = useState(() => {
-  const saved = localStorage.getItem("wsms_UNSERVICEABLEStock");
-  return saved ? JSON.parse(saved) : [];
-});
-
-  // ---------------- RECEIVES ----------------
-  const [receives, setReceives] = useState(() => {
-    const saved = localStorage.getItem("wsms_receives");
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  // ---------------- ACTIVITY ----------------
-  const getTodayDateString = () => new Date().toLocaleDateString();
-
-  const [activity, setActivity] = useState(() => {
-  const saved = localStorage.getItem("wsms_activity");
-
-  if (!saved) return [];
+  if (!saved) return fallback;
 
   try {
     return JSON.parse(saved);
   } catch {
-    return [];
+    return fallback;
   }
+};
+
+const writeStoredValue = (key, value) => {
+  localStorage.setItem(key, JSON.stringify(value));
+};
+
+const writeStoredString = (key, value) => {
+  localStorage.setItem(key, value);
+};
+
+export function StoreProvider({ children }) {
+  // ---------------- INVENTORY ----------------
+  const [inventory, setInventory] = useState(() => {
+    return readStoredValue(STORAGE_KEYS.inventory, []);
+  });
+
+  // ---------------- ISSUES ----------------
+  const [issues, setIssues] = useState(() => {
+    return readStoredValue(STORAGE_KEYS.issues, []);
+  });
+// ---------------- FAULTY STOCK ----------------
+const [faultyItems, setFaultyItems] = useState(() => {
+  return readStoredValue(STORAGE_KEYS.faultyStock, []);
 });
+
+// ---------------- UNSERVICEABLE STOCK ----------------
+const [UNSERVICEABLEItems, setUNSERVICEABLEItems] = useState(() => {
+  return readStoredValue(STORAGE_KEYS.unserviceableStock, []);
+});
+
+  // ---------------- RECEIVES ----------------
+  const [receives, setReceives] = useState(() => {
+    return readStoredValue(STORAGE_KEYS.receives, []);
+  });
+
+  // ---------------- ACTIVITY ----------------
+  const [activity, setActivity] = useState(() => {
+    return readStoredJson(STORAGE_KEYS.activity, []);
+  });
 
   // ---------------- ISSUE VOUCHERS ----------------
   const [issueVouchers, setIssueVouchers] = useState(() => {
-    const saved = localStorage.getItem("wsms_issueVouchers");
-    return saved ? JSON.parse(saved) : [];
+    return readStoredValue(STORAGE_KEYS.issueVouchers, []);
   });
 
   // ---------------- PERMANENT IV VOUCHERS ----------------
   const [permanentVouchers, setPermanentVouchers] = useState(() => {
-    const saved = localStorage.getItem("wsms_permanentVouchers");
-    return saved ? JSON.parse(saved) : [];
+    return readStoredValue(STORAGE_KEYS.permanentVouchers, []);
   });
 
   // ---------------- USERS ----------------
 const [users, setUsers] = useState(() => {
-  const saved = localStorage.getItem("wsms_users");
+  const saved = localStorage.getItem(STORAGE_KEYS.users);
 
   if (saved) {
     const parsed = JSON.parse(saved);
@@ -93,7 +114,7 @@ const [users, setUsers] = useState(() => {
 
 // ---------------- CURRENT USER ----------------
 const [currentUser, setCurrentUser] = useState(() => {
-  return localStorage.getItem("wsms_currentUser") || "";
+  return localStorage.getItem(STORAGE_KEYS.currentUser) || "";
 });
 
   // ================= SAVE TO LOCAL STORAGE =================
@@ -106,55 +127,43 @@ const [currentUser, setCurrentUser] = useState(() => {
   });
 
   useEffect(() => {
-    localStorage.setItem("wsms_inventory", JSON.stringify(inventory));
+    writeStoredValue(STORAGE_KEYS.inventory, inventory);
   }, [inventory]);
 
   useEffect(() => {
-    localStorage.setItem("wsms_issues", JSON.stringify(issues));
+    writeStoredValue(STORAGE_KEYS.issues, issues);
   }, [issues]);
 
   useEffect(() => {
-    localStorage.setItem("wsms_issueVouchers", JSON.stringify(issueVouchers));
+    writeStoredValue(STORAGE_KEYS.issueVouchers, issueVouchers);
   }, [issueVouchers]);
 
   useEffect(() => {
-    localStorage.setItem("wsms_permanentVouchers", JSON.stringify(permanentVouchers));
+    writeStoredValue(STORAGE_KEYS.permanentVouchers, permanentVouchers);
   }, [permanentVouchers]);
 
   useEffect(() => {
-    localStorage.setItem("wsms_receives", JSON.stringify(receives));
+    writeStoredValue(STORAGE_KEYS.receives, receives);
   }, [receives]);
 
 useEffect(() => {
-  localStorage.setItem(
-    "wsms_faultyStock",
-    JSON.stringify(faultyItems)
-  );
+  writeStoredValue(STORAGE_KEYS.faultyStock, faultyItems);
 }, [faultyItems]);
 
 useEffect(() => {
-  localStorage.setItem(
-    "wsms_UNSERVICEABLEStock",
-    JSON.stringify(UNSERVICEABLEItems)
-  );
+  writeStoredValue(STORAGE_KEYS.unserviceableStock, UNSERVICEABLEItems);
 }, [UNSERVICEABLEItems]);
 
   useEffect(() => {
-    localStorage.setItem("wsms_activity", JSON.stringify(activity));
+    writeStoredValue(STORAGE_KEYS.activity, activity);
   }, [activity]);
 
   useEffect(() => {
-  localStorage.setItem(
-    "wsms_users",
-    JSON.stringify(users)
-  );
+  writeStoredValue(STORAGE_KEYS.users, users);
 }, [users]);
 
 useEffect(() => {
-  localStorage.setItem(
-    "wsms_currentUser",
-    currentUser
-  );
+  writeStoredString(STORAGE_KEYS.currentUser, currentUser);
 }, [currentUser]);
 
 // ================= ACTIVITY LOGGER =================
