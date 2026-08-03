@@ -1,0 +1,12 @@
+import Database from "better-sqlite3";
+import path from "path";
+const dbPath = path.resolve("backend/data/wsms.db");
+const db = new Database(dbPath, { readonly: true });
+const total = db.prepare(`SELECT COUNT(*) AS count FROM inventory WHERE number IS NULL OR numberType IS NULL OR location IS NULL OR history IS NULL`).get().count;
+console.log(`TOTAL NULL ROWS: ${total}`);
+console.log('DISTINCT ITEM/COMPANY/STATUS FOR NULL ROWS:');
+console.log(JSON.stringify(db.prepare(`SELECT DISTINCT item, company, status FROM inventory WHERE number IS NULL OR numberType IS NULL OR location IS NULL OR history IS NULL`).all(), null, 2));
+console.log('LEGACY COLUMN PRESENCE FOR NULL ROWS:');
+console.log(JSON.stringify(db.prepare(`SELECT COUNT(*) AS count, SUM(CASE WHEN gpwNumber IS NOT NULL THEN 1 ELSE 0 END) AS gpwNumberNotNull, SUM(CASE WHEN description IS NOT NULL THEN 1 ELSE 0 END) AS descriptionNotNull, SUM(CASE WHEN quantity IS NOT NULL THEN 1 ELSE 0 END) AS quantityNotNull, SUM(CASE WHEN policeStation IS NOT NULL THEN 1 ELSE 0 END) AS policeStationNotNull, SUM(CASE WHEN mobileVehicle IS NOT NULL THEN 1 ELSE 0 END) AS mobileVehicleNotNull, SUM(CASE WHEN issueDate IS NOT NULL THEN 1 ELSE 0 END) AS issueDateNotNull, SUM(CASE WHEN receiveDate IS NOT NULL THEN 1 ELSE 0 END) AS receiveDateNotNull, SUM(CASE WHEN remarks IS NOT NULL THEN 1 ELSE 0 END) AS remarksNotNull FROM inventory WHERE number IS NULL OR numberType IS NULL OR location IS NULL OR history IS NULL`).get(), null, 2));
+console.log('SAMPLE NULL ROWS:');
+console.log(JSON.stringify(db.prepare(`SELECT id, item, company, status, description, quantity, gpwNumber, policeStation, mobileVehicle, issueDate, receiveDate, remarks, number, numberType, location, history FROM inventory WHERE number IS NULL OR numberType IS NULL OR location IS NULL OR history IS NULL ORDER BY id`).all(), null, 2));

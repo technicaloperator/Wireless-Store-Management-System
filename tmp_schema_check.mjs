@@ -1,0 +1,10 @@
+﻿import Database from "better-sqlite3";
+import path from "path";
+const dbPath = path.resolve("backend/data/wsms.db");
+const db = new Database(dbPath, { readonly: true });
+console.log("DB PATH:", dbPath);
+console.log("PRAGMA table_info(inventory):");
+console.log(JSON.stringify(db.prepare("PRAGMA table_info(inventory);").all(), null, 2));
+const master = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='inventory';").get();
+console.log("SQL:", master?.sql);
+console.log("COUNT:", db.prepare("SELECT COUNT(*) AS count FROM inventory;").get().count);

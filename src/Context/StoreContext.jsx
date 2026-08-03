@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState } from "react";
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 const STORAGE_KEYS = {
   inventory: "wsms_inventory",
@@ -47,11 +48,130 @@ const writeStoredString = (key, value) => {
   localStorage.setItem(key, value);
 };
 
+const API_BASE_URL = "http://localhost:4000/api";
+
+const apiFetch = async (url, options = {}) => {
+  const response = await fetch(url, options);
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || "Inventory API error");
+  }
+
+  return data;
+};
+
+const inventoryApi = {
+  getAll: async () => {
+    const data = await apiFetch(`${API_BASE_URL}/inventory`);
+    return data.data || [];
+  },
+  create: async (item) => {
+    const data = await apiFetch(`${API_BASE_URL}/inventory`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(item),
+    });
+    return data.data;
+  },
+  update: async (id, item) => {
+    const data = await apiFetch(`${API_BASE_URL}/inventory/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(item),
+    });
+    return data.data;
+  },
+  delete: async (id) => {
+    await apiFetch(`${API_BASE_URL}/inventory/${id}`, {
+      method: "DELETE",
+    });
+    return true;
+  },
+};
+
+const areInventoryItemsEqual = (a, b) => {
+  const keys = [
+    "id",
+    "item",
+    "company",
+    "number",
+    "numberType",
+    "status",
+    "location",
+    "faultReason",
+    "repairStatus",
+    "faultyDate",
+    "repairSentDate",
+    "repairedDate",
+    "UNSERVICEABLEDate",
+  ];
+
+  for (const key of keys) {
+    if (a[key] !== b[key]) return false;
+  }
+
+  const aHistory = a.history || [];
+  const bHistory = b.history || [];
+
+  if (aHistory.length !== bHistory.length) return false;
+
+  for (let i = 0; i < aHistory.length; i += 1) {
+    if (JSON.stringify(aHistory[i]) !== JSON.stringify(bHistory[i])) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 export function StoreProvider({ children }) {
   // ---------------- INVENTORY ----------------
-  const [inventory, setInventory] = useState(() => {
-    return readStoredValue(STORAGE_KEYS.inventory, []);
-  });
+  const [inventory, setInventoryState] = useState([]);
+  const inventorySyncRef = useRef(false);
+
+  const setInventory = (value) => {
+    setInventoryState((prevInventory) => {
+      const nextInventory = typeof value === "function" ? value(prevInventory) : value;
+
+      if (!inventorySyncRef.current) {
+        syncInventoryChanges(prevInventory, nextInventory);
+      }
+
+      return nextInventory;
+    });
+  };
+
+  const syncInventoryChanges = async (prevInventory, nextInventory) => {
+    const prevMap = new Map(prevInventory.map((item) => [item.id, item]));
+    const nextMap = new Map(nextInventory.map((item) => [item.id, item]));
+
+    for (const nextItem of nextInventory) {
+      const prevItem = prevMap.get(nextItem.id);
+
+      if (!prevItem) {
+        inventoryApi.create(nextItem).catch((error) => {
+          console.error("Inventory create failed", error);
+        });
+      } else if (!areInventoryItemsEqual(prevItem, nextItem)) {
+        inventoryApi.update(nextItem.id, nextItem).catch((error) => {
+          console.error("Inventory update failed", error);
+        });
+      }
+    }
+
+    for (const prevItem of prevInventory) {
+      if (!nextMap.has(prevItem.id)) {
+        inventoryApi.delete(prevItem.id).catch((error) => {
+          console.error("Inventory delete failed", error);
+        });
+      }
+    }
+  };
 
   // ---------------- ISSUES ----------------
   const [issues, setIssues] = useState(() => {
@@ -127,8 +247,22 @@ const [currentUser, setCurrentUser] = useState(() => {
   });
 
   useEffect(() => {
-    writeStoredValue(STORAGE_KEYS.inventory, inventory);
-  }, [inventory]);
+    const loadInventory = async () => {
+      inventorySyncRef.current = true;
+
+      try {
+        const items = await inventoryApi.getAll();
+        setInventoryState(items);
+      } catch (error) {
+        console.error("Failed to load inventory", error);
+        setInventoryState([]);
+      } finally {
+        inventorySyncRef.current = false;
+      }
+    };
+
+    loadInventory();
+  }, []);
 
   useEffect(() => {
     writeStoredValue(STORAGE_KEYS.issues, issues);

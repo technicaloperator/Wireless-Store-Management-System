@@ -2,13 +2,7 @@ import db from "../database/db.js";
 
 const formatInventoryRow = (row) => {
   if (!row) return null;
-  let history = [];
-
-  try {
-    history = row.history ? JSON.parse(row.history) : [];
-  } catch {
-    history = row.history || [];
-  }
+  const history = row.history ? JSON.parse(row.history) : [];
 
   return {
     ...row,
@@ -27,6 +21,46 @@ export function fetchInventoryItemById(id) {
 }
 
 export function insertInventoryItem(payload) {
+  const historyJson = payload.history ? JSON.stringify(payload.history) : JSON.stringify([]);
+
+  if (payload.id) {
+    db.prepare(
+      `INSERT INTO inventory (
+        id,
+        item,
+        company,
+        number,
+        numberType,
+        status,
+        location,
+        faultReason,
+        repairStatus,
+        faultyDate,
+        repairSentDate,
+        repairedDate,
+        UNSERVICEABLEDate,
+        history
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(
+      payload.id,
+      payload.item || null,
+      payload.company || null,
+      payload.number || null,
+      payload.numberType || null,
+      payload.status || null,
+      payload.location || null,
+      payload.faultReason || null,
+      payload.repairStatus || null,
+      payload.faultyDate || null,
+      payload.repairSentDate || null,
+      payload.repairedDate || null,
+      payload.UNSERVICEABLEDate || null,
+      historyJson
+    );
+
+    return fetchInventoryItemById(payload.id);
+  }
+
   const result = db.prepare(
     `INSERT INTO inventory (
       item,
@@ -56,7 +90,7 @@ export function insertInventoryItem(payload) {
     payload.repairSentDate || null,
     payload.repairedDate || null,
     payload.UNSERVICEABLEDate || null,
-    payload.history ? JSON.stringify(payload.history) : JSON.stringify([])
+    historyJson
   );
 
   return fetchInventoryItemById(result.lastInsertRowid);
