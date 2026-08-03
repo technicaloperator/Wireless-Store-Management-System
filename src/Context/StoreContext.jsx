@@ -48,13 +48,28 @@ const writeStoredString = (key, value) => {
   localStorage.setItem(key, value);
 };
 
-// Inventory API integration removed — inventory will use localStorage until next migration step.
-
 export function StoreProvider({ children }) {
   // ---------------- INVENTORY ----------------
   const [inventory, setInventory] = useState(() => {
     return readStoredValue(STORAGE_KEYS.inventory, []);
   });
+
+  useEffect(() => {
+    const loadInventoryFromApi = async () => {
+      try {
+        const response = await fetch("/api/inventory");
+        const data = await response.json();
+
+        if (response.ok && data?.success) {
+          setInventory(data.data || []);
+        }
+      } catch {
+        // Keep existing localStorage inventory if the API is unavailable.
+      }
+    };
+
+    loadInventoryFromApi();
+  }, []);
 
   // ---------------- ISSUES ----------------
   const [issues, setIssues] = useState(() => {

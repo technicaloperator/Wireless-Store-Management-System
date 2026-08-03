@@ -24,8 +24,27 @@ export function insertInventoryItem(payload) {
   const historyJson = payload.history ? JSON.stringify(payload.history) : JSON.stringify([]);
 
   if (payload.id) {
-    db.prepare(
-      `INSERT INTO inventory (
+    const params = [
+      payload.id,
+      payload.item || null,
+      payload.company || null,
+      payload.number || null,
+      payload.numberType || null,
+      payload.status || null,
+      payload.location || null,
+      payload.faultReason || null,
+      payload.repairStatus || null,
+      payload.faultyDate || null,
+      payload.repairSentDate || null,
+      payload.repairedDate || null,
+      payload.UNSERVICEABLEDate || null,
+      historyJson,
+    ];
+
+    
+    const info = db
+      .prepare(
+        `INSERT INTO inventory (
         id,
         item,
         company,
@@ -41,28 +60,33 @@ export function insertInventoryItem(payload) {
         UNSERVICEABLEDate,
         history
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).run(
-      payload.id,
-      payload.item || null,
-      payload.company || null,
-      payload.number || null,
-      payload.numberType || null,
-      payload.status || null,
-      payload.location || null,
-      payload.faultReason || null,
-      payload.repairStatus || null,
-      payload.faultyDate || null,
-      payload.repairSentDate || null,
-      payload.repairedDate || null,
-      payload.UNSERVICEABLEDate || null,
-      historyJson
-    );
+      )
+      .run(...params);
 
-    return fetchInventoryItemById(payload.id);
+    const row = fetchInventoryItemById(payload.id);
+    return row;
   }
 
-  const result = db.prepare(
-    `INSERT INTO inventory (
+  const params = [
+    payload.item || null,
+    payload.company || null,
+    payload.number || null,
+    payload.numberType || null,
+    payload.status || null,
+    payload.location || null,
+    payload.faultReason || null,
+    payload.repairStatus || null,
+    payload.faultyDate || null,
+    payload.repairSentDate || null,
+    payload.repairedDate || null,
+    payload.UNSERVICEABLEDate || null,
+    historyJson,
+  ];
+
+  
+  const result = db
+    .prepare(
+      `INSERT INTO inventory (
       item,
       company,
       number,
@@ -77,23 +101,11 @@ export function insertInventoryItem(payload) {
       UNSERVICEABLEDate,
       history
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  ).run(
-    payload.item || null,
-    payload.company || null,
-    payload.number || null,
-    payload.numberType || null,
-    payload.status || null,
-    payload.location || null,
-    payload.faultReason || null,
-    payload.repairStatus || null,
-    payload.faultyDate || null,
-    payload.repairSentDate || null,
-    payload.repairedDate || null,
-    payload.UNSERVICEABLEDate || null,
-    historyJson
-  );
+    )
+    .run(...params);
 
-  return fetchInventoryItemById(result.lastInsertRowid);
+  const row = fetchInventoryItemById(result.lastInsertRowid);
+  return row;
 }
 
 export function modifyInventoryItem(id, payload) {
