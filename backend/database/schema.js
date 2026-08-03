@@ -1,18 +1,31 @@
+function addColumnIfMissing(db, table, column, columnType) {
+  const row = db
+    .prepare(`PRAGMA table_info(${table});`)
+    .all()
+    .find((col) => col.name === column);
+
+  if (!row) {
+    db.prepare(`ALTER TABLE ${table} ADD COLUMN ${column} ${columnType};`).run();
+  }
+}
+
 export function initializeSchema(db) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS inventory (
       id INTEGER PRIMARY KEY,
       item TEXT,
-      description TEXT,
-      quantity INTEGER,
-      status TEXT,
-      gpwNumber TEXT,
       company TEXT,
-      policeStation TEXT,
-      mobileVehicle TEXT,
-      issueDate TEXT,
-      receiveDate TEXT,
-      remarks TEXT
+      number TEXT,
+      numberType TEXT,
+      status TEXT,
+      location TEXT,
+      faultReason TEXT,
+      repairStatus TEXT,
+      faultyDate TEXT,
+      repairSentDate TEXT,
+      repairedDate TEXT,
+      UNSERVICEABLEDate TEXT,
+      history TEXT
     );
 
     CREATE TABLE IF NOT EXISTS issues (
@@ -80,4 +93,17 @@ export function initializeSchema(db) {
       value TEXT
     );
   `);
+
+  addColumnIfMissing(db, "inventory", "company", "TEXT");
+  addColumnIfMissing(db, "inventory", "number", "TEXT");
+  addColumnIfMissing(db, "inventory", "numberType", "TEXT");
+  addColumnIfMissing(db, "inventory", "status", "TEXT");
+  addColumnIfMissing(db, "inventory", "location", "TEXT");
+  addColumnIfMissing(db, "inventory", "faultReason", "TEXT");
+  addColumnIfMissing(db, "inventory", "repairStatus", "TEXT");
+  addColumnIfMissing(db, "inventory", "faultyDate", "TEXT");
+  addColumnIfMissing(db, "inventory", "repairSentDate", "TEXT");
+  addColumnIfMissing(db, "inventory", "repairedDate", "TEXT");
+  addColumnIfMissing(db, "inventory", "UNSERVICEABLEDate", "TEXT");
+  addColumnIfMissing(db, "inventory", "history", "TEXT");
 }
